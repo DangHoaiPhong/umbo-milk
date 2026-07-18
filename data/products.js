@@ -1,42 +1,260 @@
 import umboMilk from "../assets/images/umboMilk.jpg";
-import umboMilk13 from "../assets/images/ỤM BÒ-13.png";
-import umboMilk11 from "../assets/images/ỤM BÒ-11.png";
-import umboMilk12 from "../assets/images/ỤM BÒ-12.png";
-import umboMilk14 from "../assets/images/ỤM BÒ-14.png";
+import img01 from "../assets/images/ỤM BÒ-01.png";
+import img02 from "../assets/images/ỤM BÒ-02.png";
+import img03 from "../assets/images/ỤM BÒ-03.png";
+import img04 from "../assets/images/ỤM BÒ-04.png";
+import img05 from "../assets/images/ỤM BÒ-05.png";
+import img06 from "../assets/images/ỤM BÒ-06.png";
+import img07 from "../assets/images/ỤM BÒ-07.png";
+import img08 from "../assets/images/ỤM BÒ-08.png";
+import img09 from "../assets/images/ỤM BÒ-09.png";
+import img10 from "../assets/images/ỤM BÒ-10.png";
+import img11 from "../assets/images/ỤM BÒ-11.png";
+import img12 from "../assets/images/ỤM BÒ-12.png";
+import img13 from "../assets/images/ỤM BÒ-13.png";
+import img14 from "../assets/images/ỤM BÒ-14.png";
+import img15 from "../assets/images/ỤM BÒ-15.png";
+import img16 from "../assets/images/ỤM BÒ-16.png";
+import img17 from "../assets/images/ỤM BÒ-17.png";
+import img18 from "../assets/images/ỤM BÒ-18.png";
+import img19 from "../assets/images/ỤM BÒ-19.png";
+import img20 from "../assets/images/ỤM BÒ-20.png";
+import img21 from "../assets/images/ỤM BÒ-21.png";
+import img22 from "../assets/images/ỤM BÒ-22.png";
 
+// stores: ["CN1","CN2","CN3","CN4"] — chi nhánh nào có sản phẩm này
 export const products = [
+  // ── Sữa ──────────────────────────────────────────────
   {
     id: 1,
+    category: "Sữa",
     name: "Sữa Bò Thanh Trùng Không Đường",
     volume: "Chai 900ml",
     price: 45000,
     oldPrice: 50000,
     discount: 10,
-    image: umboMilk14,
+    image: img14,
+    stores: ["CN1", "CN2", "CN3", "CN4"],
   },
   {
     id: 2,
+    category: "Sữa",
     name: "Sữa Bò Thanh Trùng Ít Đường",
     volume: "Chai 500ml",
     price: 32000,
     isNew: true,
-    image: umboMilk13,
+    image: img13,
+    stores: ["CN1", "CN2", "CN3", "CN4"],
   },
   {
     id: 3,
+    category: "Sữa",
     name: "Sữa Bò Thanh Trùng Vị Dâu",
     volume: "Chai 1000ml",
     price: 55000,
     oldPrice: 62000,
     discount: 11,
-    image: umboMilk12,
+    image: img12,
+    stores: ["CN1", "CN3", "CN4"],
   },
   {
     id: 4,
-    name: "ữa Bò Thanh Trùng Vị Banana",
+    category: "Sữa",
+    name: "Sữa Bò Thanh Trùng Vị Banana",
     volume: "Chai 750ml",
     price: 48000,
     isNew: true,
-    image: umboMilk11,
+    image: img11,
+    stores: ["CN2", "CN3"],
+  },
+  {
+    id: 5,
+    category: "Sữa",
+    name: "Sữa Bò Tươi Nguyên Chất",
+    volume: "Chai 1000ml",
+    price: 52000,
+    image: img03,
+    stores: ["CN1", "CN2", "CN4"],
+  },
+  {
+    id: 6,
+    category: "Sữa",
+    name: "Sữa Bò Tươi Có Đường",
+    volume: "Chai 500ml",
+    price: 30000,
+    oldPrice: 35000,
+    discount: 14,
+    image: img04,
+    stores: ["CN1", "CN2", "CN3", "CN4"],
+  },
+  {
+    id: 7,
+    category: "Sữa",
+    name: "Sữa Bò Thanh Trùng Vị Socola",
+    volume: "Chai 750ml",
+    price: 46000,
+    isNew: true,
+    image: img05,
+    stores: ["CN2", "CN4"],
+  },
+  {
+    id: 8,
+    category: "Sữa",
+    name: "Sữa Bò Tươi Vị Matcha",
+    volume: "Chai 500ml",
+    price: 38000,
+    image: img06,
+    stores: ["CN1", "CN3"],
+  },
+  {
+    id: 9,
+    category: "Sữa",
+    name: "Sữa Bò Thanh Trùng Vị Cà Phê",
+    volume: "Chai 750ml",
+    price: 42000,
+    oldPrice: 48000,
+    discount: 13,
+    image: img07,
+    stores: ["CN3", "CN4"],
+  },
+  {
+    id: 10,
+    category: "Sữa",
+    name: "Sữa Bò Tươi Vị Xoài",
+    volume: "Chai 500ml",
+    price: 35000,
+    isNew: true,
+    image: img08,
+    stores: ["CN1", "CN2"],
+  },
+  {
+    id: 11,
+    category: "Sữa",
+    name: "Sữa Bò Thanh Trùng Vị Dừa",
+    volume: "Chai 1000ml",
+    price: 58000,
+    image: img09,
+    stores: ["CN2", "CN3", "CN4"],
+  },
+  {
+    id: 12,
+    category: "Sữa",
+    name: "Sữa Bò Tươi Nguyên Kem",
+    volume: "Chai 900ml",
+    price: 50000,
+    oldPrice: 56000,
+    discount: 11,
+    image: img10,
+    stores: ["CN1", "CN4"],
+  },
+
+  // ── Váng sữa ─────────────────────────────────────────
+  {
+    id: 13,
+    category: "Váng sữa",
+    name: "Váng Sữa Tươi Nguyên Chất",
+    volume: "Hũ 100g",
+    price: 25000,
+    isNew: true,
+    image: img01,
+    stores: ["CN1", "CN2", "CN3", "CN4"],
+  },
+  {
+    id: 14,
+    category: "Váng sữa",
+    name: "Váng Sữa Vị Dâu",
+    volume: "Hũ 100g",
+    price: 28000,
+    oldPrice: 32000,
+    discount: 13,
+    image: img02,
+    stores: ["CN1", "CN3"],
+  },
+  {
+    id: 15,
+    category: "Váng sữa",
+    name: "Váng Sữa Vị Vani",
+    volume: "Hũ 100g",
+    price: 27000,
+    image: img17,
+    stores: ["CN2", "CN4"],
+  },
+
+  // ── Đồ ăn vặt / Bánh kẹo ────────────────────────────
+  {
+    id: 16,
+    category: "Đồ ăn vặt/Bánh kẹo",
+    name: "Bánh Kẹo Um Bò",
+    volume: "Hộp 200g",
+    price: 45000,
+    oldPrice: 52000,
+    discount: 13,
+    image: img15,
+    stores: ["CN1", "CN2", "CN3", "CN4"],
+  },
+
+  // ── Combo ─────────────────────────────────────────────
+  {
+    id: 17,
+    category: "Combo",
+    name: "Combo Tháng Tiết Kiệm",
+    volume: "24 chai 500ml",
+    price: 690000,
+    oldPrice: 768000,
+    discount: 10,
+    image: img16,
+    stores: ["CN1", "CN2", "CN3", "CN4"],
+  },
+  {
+    id: 18,
+    category: "Combo",
+    name: "Combo Văn Phòng",
+    volume: "12 chai 1000ml",
+    price: 580000,
+    isNew: true,
+    image: img18,
+    stores: ["CN1", "CN2", "CN3", "CN4"],
+  },
+  {
+    id: 19,
+    category: "Combo",
+    name: "Combo Váng Sữa Mix",
+    volume: "10 hũ 100g",
+    price: 240000,
+    oldPrice: 280000,
+    discount: 14,
+    image: img20,
+    stores: ["CN2", "CN3", "CN4"],
+  },
+  {
+    id: 20,
+    category: "Combo",
+    name: "Combo Đặc Biệt Um Bò",
+    volume: "Hộp quà tặng",
+    price: 350000,
+    isNew: true,
+    image: img21,
+    stores: ["CN1", "CN3"],
+  },
+  {
+    id: 21,
+    category: "Combo",
+    name: "Combo Sữa & Váng Sữa",
+    volume: "4 chai + 4 hũ",
+    price: 290000,
+    oldPrice: 320000,
+    discount: 9,
+    image: img22,
+    stores: ["CN1", "CN2", "CN4"],
+  },
+
+  // ── Sản phẩm khác ─────────────────────────────────────
+  {
+    id: 22,
+    category: "Sản phẩm khác",
+    name: "Túi Giữ Nhiệt",
+    price: 20000,
+    image: img19,
+    stores: ["CN1", "CN2", "CN3", "CN4"],
   },
 ];

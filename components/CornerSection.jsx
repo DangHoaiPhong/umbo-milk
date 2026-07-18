@@ -78,7 +78,9 @@ const CornerSection = () => {
     <section className="py-12 bg-[#fff3f4] w-full">
       <div className="px-4 max-w-7xl mx-auto">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-[#2d3748]">GÓC NHỎ ỤM BÒ</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#2d3748]">
+            GÓC NHỎ ỤM BÒ
+          </h2>
           <div className="mt-2 h-1 w-16 bg-[#F7a3a9] rounded-full" />
         </div>
 

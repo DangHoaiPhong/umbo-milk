@@ -86,7 +86,7 @@ const ComboSection = () => {
       <section className="max-w-7xl mx-auto bg-[#FFF1F5] rounded-[40px] py-16 px-8">
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-[26px] sm:text-[32px] font-bold text-[#1F2937] uppercase leading-tight">
+          <h2 className="text-xl sm:text-2xl font-bold text-[#1F2937] uppercase leading-tight">
             COMBO TIẾT KIỆM
           </h2>
           <div className="mt-3 h-1 w-[70px] bg-[#F7a3a9] rounded-full" />
@@ -115,30 +115,30 @@ const ComboSection = () => {
             </button>
           )}
           <div className="overflow-hidden">
-          <div className="overflow-visible py-4" ref={trackRef}>
-            <div
-              className="flex"
-              style={{
-                gap: `${GAP}px`,
-                transform: `translateX(-${translateX}px)`,
-                transition: transitioning
-                  ? "transform 500ms ease-in-out"
-                  : "none",
-              }}
-            >
-              {combos.map((combo, index) => (
-                <div
-                  key={combo.id}
-                  style={{
-                    width: itemWidth > 0 ? `${itemWidth}px` : undefined,
-                    flexShrink: 0,
-                  }}
-                >
-                  <ComboCard combo={combo} delay={index * 120} />
-                </div>
-              ))}
+            <div className="overflow-visible py-4" ref={trackRef}>
+              <div
+                className="flex"
+                style={{
+                  gap: `${GAP}px`,
+                  transform: `translateX(-${translateX}px)`,
+                  transition: transitioning
+                    ? "transform 500ms ease-in-out"
+                    : "none",
+                }}
+              >
+                {combos.map((combo, index) => (
+                  <div
+                    key={combo.id}
+                    style={{
+                      width: itemWidth > 0 ? `${itemWidth}px` : undefined,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <ComboCard combo={combo} delay={index * 120} />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
           </div>
         </div>
 

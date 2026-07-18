@@ -2,16 +2,23 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 
-const LoginDrawer = ({ open, onClose, triggerRef }) => {
+const LoginDrawer = ({ open, onClose, triggerRef, onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [view, setView] = useState("login"); // "login" | "forgot"
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0, caretLeft: 0 });
+  const [isMobile, setIsMobile] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Tính vị trí popup — dùng getBoundingClientRect() thuần, không cộng scrollY
-  // vì Header sticky nên icon luôn ở tọa độ viewport cố định
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Tính vị trí popup desktop — bám theo icon
   const calcPos = () => {
     if (!triggerRef?.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
@@ -28,7 +35,7 @@ const LoginDrawer = ({ open, onClose, triggerRef }) => {
   };
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || isMobile) return;
     calcPos();
     window.addEventListener("scroll", calcPos, true);
     window.addEventListener("resize", calcPos);
@@ -36,7 +43,7 @@ const LoginDrawer = ({ open, onClose, triggerRef }) => {
       window.removeEventListener("scroll", calcPos, true);
       window.removeEventListener("resize", calcPos);
     };
-  }, [open, triggerRef]);
+  }, [open, triggerRef, isMobile]);
 
   // Đóng khi click ngoài
   useEffect(() => {
@@ -86,7 +93,9 @@ const LoginDrawer = ({ open, onClose, triggerRef }) => {
         <a href="#" className="underline hover:text-[#F7a3a9]">Chính sách bảo mật</a>{" "}và{" "}
         <a href="#" className="underline hover:text-[#F7a3a9]">Điều khoản dịch vụ</a>{" "}được áp dụng.
       </p>
-      <button className="mt-4 w-full bg-[#F7a3a9] hover:bg-[#f08a91] text-white text-sm font-semibold py-2.5 rounded transition-colors">
+      <button
+        onClick={() => { onLogin?.(); onClose(); }}
+        className="mt-4 w-full bg-[#F7a3a9] hover:bg-[#f08a91] text-white text-sm font-semibold py-2.5 rounded transition-colors">
         Đăng nhập
       </button>
       <div className="flex justify-between mt-3 text-xs text-gray-500">
@@ -175,6 +184,31 @@ const LoginDrawer = ({ open, onClose, triggerRef }) => {
   const formContent = view === "forgot" ? forgotContent : loginContent;
 
   if (!open) return null;
+
+  // Mobile: popup căn giữa màn hình
+  if (isMobile) {
+    return (
+      <>
+        <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
+        <div
+          ref={dropdownRef}
+          className="fixed z-50 bg-white rounded-2xl shadow-2xl w-[calc(100vw-32px)] max-w-sm"
+          style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
+        >
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors"
+            aria-label="Đóng"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <div className="px-6 py-6">{formContent}</div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

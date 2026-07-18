@@ -47,7 +47,7 @@ const ProductCard = ({ product }) => {
 
       {/* Info */}
       <div className="flex flex-col items-center gap-1 mt-auto">
-        <h3 className="text-center font-bold text-[#2d3748] text-sm transition-colors duration-300 group-hover:text-[#F7a3a9]">
+        <h3 className="text-center font-bold text-[#2d3748] text-sm transition-colors duration-300 group-hover:text-[#F7a3a9] line-clamp-2 min-h-[56px] leading-7 flex items-center justify-center">
           {name}
         </h3>
         <p className="text-gray-400 text-xs">{volume}</p>

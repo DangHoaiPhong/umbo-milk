@@ -165,7 +165,7 @@ const ComboCard = ({ combo, delay = 0 }) => {
           style={{
             background: hovered
               ? "linear-gradient(90deg, #ff5b93, #ff3b80)"
-              : "#FF5B93",
+              : "#F7a3a9",
             transform: hovered
               ? "scale(1.05) translateY(-2px)"
               : "scale(1) translateY(0)",

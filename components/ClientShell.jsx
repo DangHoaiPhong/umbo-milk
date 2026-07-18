@@ -3,6 +3,7 @@ import { usePathname } from "next/navigation";
 import Header from "@/components/Header";
 import Content from "@/components/Content";
 import Footer from "@/components/Footer";
+import FloatingContact from "@/components/FloatingContact";
 
 const HIDE_CHROME = ["/register"];
 
@@ -17,6 +18,7 @@ export default function ClientShell({ children }) {
       <Header />
       <Content>{children}</Content>
       <Footer />
+      <FloatingContact />
     </>
   );
 }

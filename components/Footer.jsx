@@ -198,7 +198,7 @@ export default function Footer() {
         <div className="relative z-10 max-w-[1280px] mx-auto px-8 py-20 hidden lg:block">
           <div
             className="grid gap-10"
-            style={{ gridTemplateColumns: "3fr 1fr 1fr 1.5fr" }}
+            style={{ gridTemplateColumns: "2fr 1fr 1fr 1.5fr" }}
           >
             <div className="space-y-5">
               <h3 className={SECTION_TITLE}>Về Um Bò Milk</h3>

@@ -4,7 +4,6 @@ import banner from "@/assets/images/banner.jpg";
 import umboFrame from "@/assets/images/umboFrame.png";
 import ProductSection from "@/components/ProductSection";
 import ComboSection from "@/components/ComboSection";
-import FeedbackCarousel from "@/components/FeedbackCarousel";
 import CornerSection from "@/components/CornerSection";
 
 export default function Home() {
