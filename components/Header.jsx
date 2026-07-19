@@ -2,9 +2,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import umboMilk from "../assets/images/umboMilk.jpg";
 import LoginDrawer from "./LoginDrawer";
 import { products } from "../data/products";
+import { useCart } from "./CartContext";
+
+const ACCOUNT_STORAGE_KEY = "umbo_account_profile";
 
 const navLinks = [
   { label: "Trang chủ", href: "/" },
@@ -17,10 +21,13 @@ const navLinks = [
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const { totalCount, setDrawerOpen } = useCart();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   // desktop search state
   const [searchOpen, setSearchOpen] = useState(false);
   // shared query (mobile bar + desktop dropdown dùng chung)
@@ -28,7 +35,9 @@ const Header = () => {
 
   const headerRef = useRef(null);
   const loginBtnRef = useRef(null);
+  const accountMenuRef = useRef(null);
   const desktopInputRef = useRef(null);
+  const router = useRouter();
 
   const LIMIT = 5;
   const filtered = searchQuery.trim()
@@ -51,6 +60,39 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storedProfile = window.localStorage.getItem(ACCOUNT_STORAGE_KEY);
+    if (storedProfile) {
+      try {
+        const parsed = JSON.parse(storedProfile);
+        setUserProfile(parsed);
+        setIsLoggedIn(true);
+      } catch {
+        window.localStorage.removeItem(ACCOUNT_STORAGE_KEY);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (isLoggedIn && userProfile) {
+      window.localStorage.setItem(
+        ACCOUNT_STORAGE_KEY,
+        JSON.stringify(userProfile),
+      );
+    } else {
+      window.localStorage.removeItem(ACCOUNT_STORAGE_KEY);
+    }
+  }, [isLoggedIn, userProfile]);
+
   // Auto-focus desktop input khi mở
   useEffect(() => {
     if (!searchOpen) return;
@@ -64,42 +106,122 @@ const Header = () => {
       if (headerRef.current && !headerRef.current.contains(e.target)) {
         closeDesktopSearch();
       }
+      if (
+        accountMenuOpen &&
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(e.target) &&
+        !loginBtnRef.current?.contains(e.target)
+      ) {
+        setAccountMenuOpen(false);
+      }
     };
-    const handleEsc = (e) => { if (e.key === "Escape") closeDesktopSearch(); };
+    const handleEsc = (e) => {
+      if (e.key === "Escape") {
+        closeDesktopSearch();
+        setAccountMenuOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEsc);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEsc);
     };
-  }, []);
+  }, [accountMenuOpen]);
 
   const SearchSVG = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+      />
     </svg>
   );
 
   const CloseSVG = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M6 18L18 6M6 6l12 12"
+      />
     </svg>
   );
+
+  const handleLogin = (profile) => {
+    const safeProfile = {
+      name: profile?.name || "Khách hàng Umbo",
+      email: profile?.email || "",
+      phone: profile?.phone || "",
+      password: profile?.password || "",
+      isVip: Boolean(profile?.isVip),
+    };
+    setUserProfile(safeProfile);
+    setIsLoggedIn(true);
+    setLoginOpen(false);
+    setAccountMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserProfile(null);
+    setAccountMenuOpen(false);
+    setLoginOpen(false);
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(ACCOUNT_STORAGE_KEY);
+    }
+    router.push("/");
+  };
+
+  const handleAccountToggle = () => {
+    if (isLoggedIn) {
+      setAccountMenuOpen((prev) => !prev);
+      setLoginOpen(false);
+    } else {
+      setLoginOpen(true);
+      setAccountMenuOpen(false);
+    }
+  };
 
   const SearchDropdown = ({ maxHeight }) => (
     <div className="overflow-y-auto" style={{ maxHeight }}>
       {shown.length === 0 ? (
-        <p className="text-center text-gray-400 text-sm py-6">Không có sản phẩm nào...</p>
+        <p className="text-center text-gray-400 text-sm py-6">
+          Không có sản phẩm nào...
+        </p>
       ) : (
         shown.map((p, i) => (
           <div key={p.id}>
             <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#fff0f1] transition-colors duration-200 group">
               <div>
                 <p className="text-sm font-medium text-gray-800">{p.name}</p>
-                <p className="text-sm text-[#F7a3a9] font-semibold mt-0.5">{p.price.toLocaleString("vi-VN")}đ</p>
+                <p className="text-sm text-[#F7a3a9] font-semibold mt-0.5">
+                  {p.price.toLocaleString("vi-VN")}đ
+                </p>
               </div>
-              <div className="ml-3 w-10 h-10 flex-shrink-0 overflow-hidden rounded-lg">
-                <Image src={p.image} alt={p.name} width={40} height={40} className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110" />
+              <div className="ml-3 w-10 h-10 shrink-0 overflow-hidden rounded-lg">
+                <Image
+                  src={p.image}
+                  alt={p.name}
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
+                />
               </div>
             </div>
             {i < shown.length - 1 && <div className="mx-4 h-px bg-gray-100" />}
@@ -132,22 +254,29 @@ const Header = () => {
           style={searchOpen ? { opacity: 0, pointerEvents: "none" } : {}}
         >
           {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="text-sm text-[#F7a3a9] hover:text-[#00000052]">
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm text-[#F7a3a9] hover:text-[#00000052]"
+            >
               {link.label}
             </Link>
           ))}
         </nav>
 
         {/* Icons */}
-        <div className="flex items-center gap-1">
-
+        <div className="flex items-center gap-2">
           {/* Search icon — chỉ desktop lg+ */}
           <div className="relative hidden lg:flex items-center justify-center">
             <button
               aria-label="Tìm kiếm"
               onClick={() => setSearchOpen(true)}
               className="flex items-center justify-center rounded-full p-2 text-[#F7a3a9] hover:text-[#00000052] transition-opacity duration-300"
-              style={searchOpen ? { opacity: 0, pointerEvents: "none", visibility: "hidden" } : {}}
+              style={
+                searchOpen
+                  ? { opacity: 0, pointerEvents: "none", visibility: "hidden" }
+                  : {}
+              }
             >
               <SearchSVG className="w-7 h-7" />
             </button>
@@ -158,7 +287,8 @@ const Header = () => {
               style={{
                 width: searchOpen ? "260px" : "0px",
                 opacity: searchOpen ? 1 : 0,
-                transition: "width 300ms ease-in-out, opacity 300ms ease-in-out",
+                transition:
+                  "width 300ms ease-in-out, opacity 300ms ease-in-out",
                 pointerEvents: searchOpen ? "auto" : "none",
               }}
             >
@@ -177,8 +307,11 @@ const Header = () => {
               <div
                 style={{
                   opacity: dropdownOpen ? 1 : 0,
-                  transform: dropdownOpen ? "translateY(0)" : "translateY(-10px)",
-                  transition: "opacity 280ms ease-out, transform 280ms ease-out",
+                  transform: dropdownOpen
+                    ? "translateY(0)"
+                    : "translateY(-10px)",
+                  transition:
+                    "opacity 280ms ease-out, transform 280ms ease-out",
                   pointerEvents: dropdownOpen ? "auto" : "none",
                 }}
                 className="absolute top-full right-0 mt-2 w-full bg-white rounded-2xl shadow-lg overflow-hidden z-50"
@@ -191,41 +324,136 @@ const Header = () => {
           {/* Cart */}
           <button
             aria-label="Giỏ hàng"
+            onClick={() => setDrawerOpen(true)}
             className="relative flex items-center justify-center rounded-full p-2 text-[#F7a3a9] hover:text-[#00000052]"
           >
             <span className="box-icon flex items-center justify-center">
-              <svg className="svg-ico-cart w-6 h-6 lg:w-7 lg:h-7" xmlns="http://www.w3.org/2000/svg" viewBox="0 -13 456.75885 456" fill="currentColor">
+              <svg
+                className="svg-ico-cart w-6 h-6 lg:w-7 lg:h-7"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 -13 456.75885 456"
+                fill="currentColor"
+              >
                 <path d="m150.355469 322.332031c-30.046875 0-54.402344 24.355469-54.402344 54.402344 0 30.042969 24.355469 54.398437 54.402344 54.398437 30.042969 0 54.398437-24.355468 54.398437-54.398437-.03125-30.03125-24.367187-54.371094-54.398437-54.402344zm0 88.800781c-19 0-34.402344-15.402343-34.402344-34.398437 0-19 15.402344-34.402344 34.402344-34.402344 18.996093 0 34.398437 15.402344 34.398437 34.402344 0 18.996094-15.402344 34.398437-34.398437 34.398437zm0 0"></path>
                 <path d="m446.855469 94.035156h-353.101563l-7.199218-40.300781c-4.4375-24.808594-23.882813-44.214844-48.699219-48.601563l-26.101563-4.597656c-5.441406-.96875-10.632812 2.660156-11.601562 8.097656-.964844 5.441407 2.660156 10.632813 8.101562 11.601563l26.199219 4.597656c16.53125 2.929688 29.472656 15.871094 32.402344 32.402344l35.398437 199.699219c4.179688 23.894531 24.941406 41.324218 49.199219 41.300781h210c22.0625.066406 41.546875-14.375 47.902344-35.5l47-155.800781c.871093-3.039063.320312-6.3125-1.5-8.898438-1.902344-2.503906-4.859375-3.980468-8-4zm-56.601563 162.796875c-3.773437 12.6875-15.464844 21.367188-28.699218 21.300781h-210c-14.566407.039063-27.035157-10.441406-29.5-24.800781l-24.699219-139.398437h336.097656zm0 0"></path>
-                <path d="m360.355469 322.332031c-30.046875 0-54.402344 24.355469-54.402344 54.402344 0 30.042969 24.355469 54.398437 54.402344 54.398437 30.042969 0 54.398437-24.355468 54.398437-54.398437-.03125-30.03125-24.367187-54.371094-54.398437-54.402344zm0 88.800781c-19 0-34.402344-15.402343-34.402344-34.398437 0-19 15.402344-34.402344 34.402344-34.402344 18.996093 0 34.398437 15.402344 34.398437 34.402344 0 18.996094-15.402344 34.398437-34.398437 34.398437zm0 0"></path>
+                <path d="m360.355469 322.332031c-30.046875 0-54.402344 24.355469-54.402344 54.402344 0 30.042969 24.355469 54.398437 54.402344 54.398437 30.042969 0 54.398437-24.355468 54.398437-54.398437-.03125-30.03125-24.367187-54.371094-54.398437-54.402344zm0 88.800781c-19 0-34.402344-15.402343-34.402344-34.402344 18.996093 0 34.398437 15.402344 34.398437 34.402344 0 18.996094-15.402344 34.398437-34.398437 34.398437zm0 0"></path>
               </svg>
             </span>
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 lg:h-6 lg:w-6 items-center justify-center rounded-full bg-[#F7a3a9] text-[10px] lg:text-[11px] font-semibold text-white">
-              {cartCount}
+            <span
+              key={totalCount}
+              className="absolute -top-1 -right-1 flex h-5 w-5 lg:h-6 lg:w-6 items-center justify-center rounded-full bg-[#F7a3a9] text-[10px] lg:text-[11px] font-semibold text-white"
+              style={{
+                animation: "badgePop 300ms cubic-bezier(0.34,1.56,0.64,1) both",
+              }}
+            >
+              {totalCount}
             </span>
           </button>
 
-          {/* Login / Logout */}
-          <button
-            ref={loginBtnRef}
-            aria-label={isLoggedIn ? "Đăng xuất" : "Đăng nhập"}
-            onClick={() => isLoggedIn ? setIsLoggedIn(false) : setLoginOpen(!loginOpen)}
-            className="relative flex items-center justify-center w-10 h-10 rounded-full text-[#F7a3a9] hover:text-[#00000052]"
-          >
-            {isLoggedIn ? (
-              // Icon logout
-              <svg className="w-6 h-6 lg:w-7 lg:h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
-              </svg>
-            ) : (
-              // Icon login (account)
-              <svg className="svg-ico-account w-6 h-6 lg:w-7 lg:h-7" viewBox="0 0 1024 1024" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path className="path1" d="M486.4 563.2c-155.275 0-281.6-126.325-281.6-281.6s126.325-281.6 281.6-281.6 281.6 126.325 281.6 281.6-126.325 281.6-281.6 281.6zM486.4 51.2c-127.043 0-230.4 103.357-230.4 230.4s103.357 230.4 230.4 230.4c127.042 0 230.4-103.357 230.4-230.4s-103.358-230.4-230.4-230.4z" />
-                <path className="path2" d="M896 1024h-819.2c-42.347 0-76.8-34.451-76.8-76.8 0-3.485 0.712-86.285 62.72-168.96 36.094-48.126 85.514-86.36 146.883-113.634 74.957-33.314 168.085-50.206 276.797-50.206 108.71 0 201.838 16.893 276.797 50.206 61.37 27.275 110.789 65.507 146.883 113.634 62.008 82.675 62.72 165.475 62.72 168.96 0 42.349-34.451 76.8-76.8 76.8zM486.4 665.6c-178.52 0-310.267 48.789-381 141.093-53.011 69.174-54.195 139.904-54.2 140.61 0 14.013 11.485 25.498 25.6 25.498h819.2c14.115 0 25.6-11.485 25.6-25.6-0.006-0.603-1.189-71.333-54.198-140.507-70.734-92.304-202.483-141.093-381.002-141.093z" />
-              </svg>
+          {/* Login / Account */}
+          <div className="relative">
+            <button
+              ref={loginBtnRef}
+              aria-label={isLoggedIn ? "Tài khoản" : "Đăng nhập"}
+              onClick={handleAccountToggle}
+              className="relative flex items-center justify-center h-10 w-10 rounded-full text-[#F7a3a9] hover:text-[#00000052]"
+            >
+              {isLoggedIn ? (
+                <>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-bold text-[#F7a3a9] shadow-sm">
+                    {userProfile?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </div>
+                  {userProfile?.isVip ? (
+                    <span className="absolute -top-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#f5c542] text-[10px] text-white shadow-sm">
+                      👑
+                    </span>
+                  ) : null}
+                </>
+              ) : (
+                <svg
+                  className="svg-ico-account w-6 h-6 lg:w-7 lg:h-7"
+                  viewBox="0 0 1024 1024"
+                  fill="currentColor"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    className="path1"
+                    d="M486.4 563.2c-155.275 0-281.6-126.325-281.6-281.6s126.325-281.6 281.6-281.6 281.6 126.325 281.6 281.6-126.325 281.6-281.6 281.6zM486.4 51.2c-127.043 0-230.4 103.357-230.4 230.4s103.357 230.4 230.4 230.4c127.042 0 230.4-103.357 230.4-230.4s-103.358-230.4-230.4-230.4z"
+                  />
+                  <path
+                    className="path2"
+                    d="M896 1024h-819.2c-42.347 0-76.8-34.451-76.8-76.8 0-3.485 0.712-86.285 62.72-168.96 36.094-48.126 85.514-86.36 146.883-113.634 74.957-33.314 168.085-50.206 276.797-50.206 108.71 0 201.838 16.893 276.797 50.206 61.37 27.275 110.789 65.507 146.883 113.634 62.008 82.675 62.72 165.475 62.72 168.96 0 42.349-34.451 76.8-76.8 76.8zM486.4 665.6c-178.52 0-310.267 48.789-381 141.093-53.011 69.174-54.195 139.904-54.2 140.61 0 14.013 11.485 25.498 25.6 25.498h819.2c14.115 0 25.6-11.485 25.6-25.6-0.006-0.603-1.189-71.333-54.198-140.507-70.734-92.304-202.483-141.093-381.002-141.093z"
+                  />
+                </svg>
+              )}
+            </button>
+
+            {accountMenuOpen && isLoggedIn && (
+              <div
+                ref={accountMenuRef}
+                className={`absolute right-0 z-50 ${isMobile ? "fixed inset-0" : "top-full mt-3 w-72"}`}
+              >
+                {isMobile ? (
+                  <div
+                    className="fixed inset-0 bg-black/40"
+                    onClick={() => setAccountMenuOpen(false)}
+                  />
+                ) : null}
+                <div
+                  className={`${isMobile ? "fixed right-0 top-0 h-full w-[85vw] max-w-sm bg-white shadow-2xl" : "rounded-3xl border border-[#f7d0d3] bg-white p-4 shadow-[0_20px_45px_rgba(247,163,169,0.16)]"}`}
+                >
+                  {isMobile ? (
+                    <div className="flex items-center justify-between border-b border-[#f7d0d3] px-4 py-4">
+                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#F7a3a9]">
+                        Tài khoản
+                      </p>
+                      <button
+                        onClick={() => setAccountMenuOpen(false)}
+                        className="text-gray-500"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : null}
+                  <div className={`${isMobile ? "px-4 py-4" : ""}`}>
+                    <div className="mb-4 rounded-2xl bg-[#fff3f4] p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#F7a3a9]">
+                        THÔNG TIN TÀI KHOẢN
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-[#2d3748]">
+                        {userProfile?.name || "Khách hàng Umbo"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {userProfile?.email || "Chưa có email"}
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <Link
+                        href="/account"
+                        onClick={() => setAccountMenuOpen(false)}
+                        className="rounded-2xl px-3 py-2.5 text-sm font-medium text-[#2d3748] transition hover:bg-[#fff3f4] hover:text-[#F7a3a9]"
+                      >
+                        Tài khoản của tôi
+                      </Link>
+                      <Link
+                        href="/addresses"
+                        onClick={() => setAccountMenuOpen(false)}
+                        className="rounded-2xl px-3 py-2.5 text-sm font-medium text-[#2d3748] transition hover:bg-[#fff3f4] hover:text-[#F7a3a9]"
+                      >
+                        Danh sách địa chỉ
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-red-500 transition hover:bg-red-50"
+                      >
+                        Đăng xuất
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
-          </button>
+          </div>
 
           {/* Hamburger — chỉ hiện dưới lg */}
           <button
@@ -233,9 +461,15 @@ const Header = () => {
             className="lg:hidden flex flex-col gap-1.5"
             onClick={() => setMenuOpen(!menuOpen)}
           >
-            <span className={`block w-6 h-0.5 bg-[#F7a3a9] transition-transform ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
-            <span className={`block w-6 h-0.5 bg-[#F7a3a9] transition-opacity ${menuOpen ? "opacity-0" : ""}`} />
-            <span className={`block w-6 h-0.5 bg-[#F7a3a9] transition-transform ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+            <span
+              className={`block w-6 h-0.5 bg-[#F7a3a9] transition-transform ${menuOpen ? "rotate-45 translate-y-2" : ""}`}
+            />
+            <span
+              className={`block w-6 h-0.5 bg-[#F7a3a9] transition-opacity ${menuOpen ? "opacity-0" : ""}`}
+            />
+            <span
+              className={`block w-6 h-0.5 bg-[#F7a3a9] transition-transform ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`}
+            />
           </button>
         </div>
       </div>
@@ -264,21 +498,33 @@ const Header = () => {
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         triggerRef={loginBtnRef}
-        onLogin={() => setIsLoggedIn(true)}
+        onLogin={handleLogin}
       />
 
       {menuOpen && (
-        <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setMenuOpen(false)} />
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          onClick={() => setMenuOpen(false)}
+        />
       )}
 
       <nav
         className={`fixed top-0 right-0 h-full w-72 bg-white z-50 flex flex-col px-6 py-8 gap-6 shadow-xl transition-transform duration-300 lg:hidden ${menuOpen ? "translate-x-0" : "translate-x-full"}`}
       >
-        <button className="self-end text-[#F7a3a9]" onClick={() => setMenuOpen(false)} aria-label="Đóng menu">
+        <button
+          className="self-end text-[#F7a3a9]"
+          onClick={() => setMenuOpen(false)}
+          aria-label="Đóng menu"
+        >
           <CloseSVG className="w-6 h-6" />
         </button>
         {navLinks.map((link) => (
-          <Link key={link.href} href={link.href} className="text-sm text-[#F7a3a9] hover:text-[#00000052] transition-colors" onClick={() => setMenuOpen(false)}>
+          <Link
+            key={link.href}
+            href={link.href}
+            className="text-sm text-[#F7a3a9] hover:text-[#00000052] transition-colors"
+            onClick={() => setMenuOpen(false)}
+          >
             {link.label}
           </Link>
         ))}

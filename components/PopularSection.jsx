@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { popularProducts, bannerImage } from "@/data/popularProducts";
+import { products } from "@/data/products";
 
 const formatPrice = (p) => p.toLocaleString("vi-VN") + "đ";
 
@@ -43,8 +45,12 @@ const BgDecor = () => (
 );
 
 /* ── Item sản phẩm ── */
-const ProductItem = ({ item, index, visible }) => (
-  <div
+const ProductItem = ({ item, index, visible }) => {
+  const matched = products.find((p) => p.name === item.name);
+  const href = matched ? `/products/${matched.id}` : "/products";
+  return (
+  <Link
+    href={href}
     className="flex items-center gap-4 bg-white/80 backdrop-blur-sm border border-[#F7a3a9]/20 rounded-2xl px-5 py-4 cursor-pointer hover:-translate-y-1 hover:shadow-md hover:shadow-[#F7a3a9]/20 hover:bg-white"
     style={{
       opacity: visible ? 1 : 0,
@@ -75,8 +81,9 @@ const ProductItem = ({ item, index, visible }) => (
         <span className="text-red-300 text-[11px] font-medium mt-0.5 block">Hết hàng</span>
       )}
     </div>
-  </div>
-);
+  </Link>
+  );
+};
 
 /* ── Main component ── */
 const PopularSection = () => {

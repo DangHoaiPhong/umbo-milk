@@ -4,6 +4,11 @@ import Header from "@/components/Header";
 import Content from "@/components/Content";
 import Footer from "@/components/Footer";
 import FloatingContact from "@/components/FloatingContact";
+import { QuickViewProvider } from "@/components/QuickViewContext";
+import QuickViewModal from "@/components/QuickViewModal";
+import { CartProvider } from "@/components/CartContext";
+import CartToast from "@/components/CartToast";
+import CartDrawer from "@/components/CartDrawer";
 
 const HIDE_CHROME = ["/register"];
 
@@ -14,11 +19,16 @@ export default function ClientShell({ children }) {
   if (hideChrome) return <>{children}</>;
 
   return (
-    <>
-      <Header />
-      <Content>{children}</Content>
-      <Footer />
-      <FloatingContact />
-    </>
+    <CartProvider>
+      <QuickViewProvider>
+        <Header />
+        <Content>{children}</Content>
+        <Footer />
+        <FloatingContact />
+        <QuickViewModal />
+        <CartToast />
+        <CartDrawer />
+      </QuickViewProvider>
+    </CartProvider>
   );
 }

@@ -1,12 +1,18 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { menuItems, promotions } from "@/data/menuSuggested";
+import { products } from "@/data/products";
 
 const formatPrice = (p) => p.toLocaleString("vi-VN") + "đ";
 
-const MenuItem = ({ item, index, visible }) => (
-  <div
+const MenuItem = ({ item, index, visible }) => {
+  const matched = products.find((p) => p.name === item.name);
+  const href = matched ? `/products/${matched.id}` : "/products";
+  return (
+  <Link
+    href={href}
     className="flex items-center gap-4 bg-white border border-[#F7a3a9]/20 rounded-2xl p-5 cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-[#F7a3a9]/15"
     style={{
       opacity: visible ? 1 : 0,
@@ -43,8 +49,9 @@ const MenuItem = ({ item, index, visible }) => (
         <span className="text-red-300 text-xs font-medium">Hết hàng</span>
       )}
     </div>
-  </div>
-);
+  </Link>
+  );
+};
 
 const MenuSuggested = () => {
   const sectionRef = useRef(null);
