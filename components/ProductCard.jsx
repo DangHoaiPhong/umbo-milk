@@ -11,8 +11,8 @@ const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
 
   return (
-    <Link href={`/products/${id}`} className="block">
-      <div className="group relative bg-white rounded-[20px] shadow-sm p-4 flex flex-col transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl cursor-pointer">
+    <Link href={`/products/${id}`} className="block w-full h-full">
+      <div className="group relative w-full h-full min-w-0 bg-white rounded-[20px] shadow-sm p-4 flex flex-col transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-xl cursor-pointer">
         {/* Badges */}
         <div className="absolute top-5 left-5 z-10 flex flex-col gap-1">
           {discount && (
@@ -28,14 +28,14 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Image */}
-        <div className="relative w-full h-48 overflow-hidden rounded-xl mb-4">
+        <div className="relative w-full h-48 min-h-[12rem] overflow-hidden rounded-xl mb-4 bg-[#fff9fa]">
           {image && (
             <Image
               src={image}
               alt={name}
               fill
               sizes="(max-width: 768px) 100vw, 300px"
-              className="object-contain transition-transform duration-300 ease-in-out group-hover:scale-[1.08]"
+              className="w-full h-full object-contain p-2 transition-transform duration-300 ease-in-out group-hover:scale-[1.08]"
             />
           )}
 
@@ -87,13 +87,13 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Info */}
-        <div className="flex flex-col items-center gap-1 mt-auto">
+        <div className="flex flex-1 flex-col items-center gap-1 mt-auto">
           <h3 className="text-center font-bold text-[#2d3748] text-sm transition-colors duration-300 group-hover:text-[#F7a3a9] line-clamp-2 min-h-[56px] leading-7 flex items-center justify-center">
             {name}
           </h3>
           <p className="text-gray-400 text-xs">{volume}</p>
 
-          <div className="flex items-center justify-between sm:justify-center w-full mt-1">
+          <div className="flex items-center justify-between sm:justify-center w-full mt-1 gap-2">
             <div className="flex items-center gap-2">
               <span className="text-[#F7a3a9] font-bold text-sm">
                 {price.toLocaleString("vi-VN")}đ

@@ -3,18 +3,18 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import ProductCard from "@/components/ProductCard";
 
 const CATEGORIES = [
-  { label: "Sữa",                  values: ["sua"]                   },
-  { label: "Váng sữa",             values: ["vang-sua"]              },
-  { label: "Combo",                values: ["combo"]                 },
-  { label: "Đồ ăn vặt/Bánh kẹo",  values: ["do-an-vat"]             },
-  { label: "Sản phẩm khác",        values: ["khac", "phu-kien"]      },
+  { label: "Sữa", values: ["sua"] },
+  { label: "Váng sữa", values: ["vang-sua"] },
+  { label: "Combo", values: ["combo"] },
+  { label: "Đồ ăn vặt/Bánh kẹo", values: ["do-an-vat"] },
+  { label: "Sản phẩm khác", values: ["khac", "phu-kien"] },
 ];
 
 const STORES = [
-  { label: "CN 1: 111 Tôn Đản, Quận 4",           key: "CN1" },
+  { label: "CN 1: 111 Tôn Đản, Quận 4", key: "CN1" },
   { label: "CN 2: 120 Hoàng Diệu 2, Quận Thủ Đức", key: "CN2" },
-  { label: "CN 3: 261 Tô Hiến Thành, Quận 10",     key: "CN3" },
-  { label: "CN 4: 130 Vạn Kiếp, Quận Bình Thạnh",  key: "CN4" },
+  { label: "CN 3: 261 Tô Hiến Thành, Quận 10", key: "CN3" },
+  { label: "CN 4: 130 Vạn Kiếp, Quận Bình Thạnh", key: "CN4" },
 ];
 
 const PAGE_SIZE = 8;
@@ -22,12 +22,16 @@ const PAGE_SIZE = 8;
 const DEFAULT_CATEGORIES = ["sua", "vang-sua", "do-an-vat"];
 
 function filterProducts(products, selectedCategoryKeys, stores) {
-  const slugs = selectedCategoryKeys.length > 0
-    ? selectedCategoryKeys.flatMap((key) => CATEGORIES.find((c) => c.label === key)?.values ?? [key])
-    : DEFAULT_CATEGORIES;
+  const slugs =
+    selectedCategoryKeys.length > 0
+      ? selectedCategoryKeys.flatMap(
+          (key) => CATEGORIES.find((c) => c.label === key)?.values ?? [key],
+        )
+      : DEFAULT_CATEGORIES;
   return products.filter((p) => {
     const categoryMatch = slugs.includes(p.category);
-    const storeMatch    = stores.length === 0 || p.stores?.some((s) => stores.includes(s));
+    const storeMatch =
+      stores.length === 0 || p.stores?.some((s) => stores.includes(s));
     return categoryMatch && storeMatch;
   });
 }
@@ -108,7 +112,9 @@ export default function ProductsPage() {
   }, []);
 
   const toggle = (setter) => (item) => {
-    setter((prev) => prev.includes(item) ? prev.filter((v) => v !== item) : [...prev, item]);
+    setter((prev) =>
+      prev.includes(item) ? prev.filter((v) => v !== item) : [...prev, item],
+    );
   };
 
   const resetFilters = () => {
@@ -152,7 +158,10 @@ export default function ProductsPage() {
             <div className="bg-white rounded-2xl shadow-sm p-4">
               <AccordionGroup
                 title="Danh mục sản phẩm"
-                items={CATEGORIES.map((c) => ({ key: c.label, label: c.label }))}
+                items={CATEGORIES.map((c) => ({
+                  key: c.label,
+                  label: c.label,
+                }))}
                 checked={selectedCategories}
                 onChange={toggle(setSelectedCategories)}
               />
@@ -166,11 +175,12 @@ export default function ProductsPage() {
           </aside>
 
           {/* ── Product grid ── */}
-          <section className="flex-1 min-w-0">
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+          <section className="flex-1 min-w-0 w-full">
+            <div className="grid w-full grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
               {visibleProducts.map((product, index) => (
                 <div
                   key={product.id}
+                  className="w-full min-w-0 h-full"
                   style={
                     index >= newStartRef.current
                       ? {
@@ -186,16 +196,23 @@ export default function ProductsPage() {
             </div>
 
             {loading && (
-              <p className="text-center text-gray-400 text-sm py-16">Đang tải sản phẩm...</p>
+              <p className="text-center text-gray-400 text-sm py-16">
+                Đang tải sản phẩm...
+              </p>
             )}
             {!loading && error && (
-              <p className="text-center text-red-400 text-sm py-16">Không thể tải sản phẩm: {error}</p>
+              <p className="text-center text-red-400 text-sm py-16">
+                Không thể tải sản phẩm: {error}
+              </p>
             )}
             {!loading && !error && filteredProducts.length === 0 && (
               <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                 <span className="text-5xl">📦</span>
-                <p className="text-gray-500 font-medium">Không tìm thấy sản phẩm phù hợp.</p>
-                {(selectedCategories.length > 0 || selectedStores.length > 0) && (
+                <p className="text-gray-500 font-medium">
+                  Không tìm thấy sản phẩm phù hợp.
+                </p>
+                {(selectedCategories.length > 0 ||
+                  selectedStores.length > 0) && (
                   <button
                     onClick={resetFilters}
                     className="mt-1 px-6 py-2 text-sm font-semibold text-white bg-[#F7a3a9] rounded-full hover:bg-[#f08a91] transition-colors"
