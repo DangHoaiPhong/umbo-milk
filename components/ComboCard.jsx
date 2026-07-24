@@ -1,11 +1,30 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import Image from "next/image";
 import placeholder from "@/assets/images/umboMilk.jpg";
+import { useCart } from "./CartContext";
 
 const ComboCard = ({ combo, delay = 0 }) => {
-  const { tag, title, description, price } = combo;
+  const {
+    id,
+    tag = "Combo tiết kiệm",
+    title = "Combo",
+    description = "Combo ưu đãi hấp dẫn",
+    price = 0,
+    image,
+    category = "combo",
+    name,
+    oldPrice,
+    discount,
+    volume,
+    available,
+    sku,
+    bodyHtml,
+    isNew,
+  } = combo ?? {};
+  const router = useRouter();
+  const { addToCart, setDrawerOpen } = useCart();
   const cardRef = useRef(null);
   const btnRef = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -32,6 +51,8 @@ const ComboCard = ({ combo, delay = 0 }) => {
     setHovered(false);
   };
 
+  const numericPrice = Number(price) || 0;
+
   const handleRipple = (e) => {
     const btn = btnRef.current;
     if (!btn) return;
@@ -47,13 +68,53 @@ const ComboCard = ({ combo, delay = 0 }) => {
     );
   };
 
+  const handleCardClick = () => {
+    if (!id) return;
+    router.push(`/products/${id}`);
+  };
+
+  const handleBuy = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleRipple(e);
+
+    const productForCart = {
+      id,
+      name: name ?? title,
+      title,
+      category,
+      description,
+      price: Number(price) || 0,
+      oldPrice: Number(oldPrice) || undefined,
+      discount: Number(discount) || undefined,
+      image,
+      volume,
+      available,
+      sku,
+      bodyHtml,
+      isNew,
+    };
+
+    addToCart(productForCart, 1);
+    setDrawerOpen(true);
+  };
+
   return (
     <div
       ref={cardRef}
+      role="button"
+      tabIndex={0}
+      onClick={handleCardClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleCardClick();
+        }
+      }}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={handleMouseLeave}
-      className="relative bg-white rounded-[20px] overflow-hidden flex flex-col items-center text-center cursor-default"
+      className="relative bg-white rounded-[20px] overflow-hidden flex flex-col items-center text-center cursor-pointer"
       style={{
         opacity: visible ? 1 : 0,
         transform: visible
@@ -83,11 +144,10 @@ const ComboCard = ({ combo, delay = 0 }) => {
 
       {/* Image - không có padding để tràn full width */}
       <div className="relative w-full h-32 overflow-hidden">
-        <Image
-          src={placeholder}
+        <img
+          src={image || placeholder.src}
           alt={title}
-          fill
-          className="object-cover"
+          className="w-full h-full object-cover"
           style={{
             transform: hovered ? "scale(1.06)" : "scale(1)",
             transition: "transform 500ms ease-out",
@@ -154,13 +214,14 @@ const ComboCard = ({ combo, delay = 0 }) => {
             transition: "transform 300ms ease, filter 300ms ease",
           }}
         >
-          {price.toLocaleString("vi-VN")}đ
+          {numericPrice.toLocaleString("vi-VN")}đ
         </p>
 
         {/* Button */}
         <button
           ref={btnRef}
-          onClick={handleRipple}
+          type="button"
+          onClick={handleBuy}
           className="relative overflow-hidden flex items-center gap-1.5 px-5 py-2.5 rounded-full text-white text-[13px] font-semibold cursor-pointer active:scale-95"
           style={{
             background: hovered

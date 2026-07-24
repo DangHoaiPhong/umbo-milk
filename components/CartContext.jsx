@@ -1,12 +1,39 @@
 "use client";
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
+
+const STORAGE_KEY = "umbo_cart";
 
 const CartContext = createContext(null);
+
+function loadCart() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCart(items) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  } catch {}
+}
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [toast, setToast] = useState(null); // { product, qty }
+  const [toast, setToast] = useState(null);
+
+  // Đọc localStorage sau khi mount (tránh hydration mismatch)
+  useEffect(() => {
+    setItems(loadCart());
+  }, []);
+
+  // Sync localStorage mỗi khi items thay đổi
+  useEffect(() => {
+    saveCart(items);
+  }, [items]);
 
   const addToCart = useCallback((product, qty = 1) => {
     setItems((prev) => {
@@ -32,6 +59,8 @@ export function CartProvider({ children }) {
     );
   }, []);
 
+  const clearCart = useCallback(() => setItems([]), []);
+
   const totalCount = items.reduce((s, i) => s + i.qty, 0);
   const totalPrice = items.reduce((s, i) => s + i.product.price * i.qty, 0);
 
@@ -44,6 +73,7 @@ export function CartProvider({ children }) {
         addToCart,
         removeFromCart,
         updateQty,
+        clearCart,
         drawerOpen,
         setDrawerOpen,
         toast,

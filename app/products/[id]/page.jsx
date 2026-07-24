@@ -1,27 +1,22 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart, Minus, Plus, ChevronDown } from "lucide-react";
-import { products } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/components/CartContext";
 
-// ── Static detail data per product (fallback nếu chưa có) ──
-const DETAIL_MAP = {
-  default: {
-    description:
-      "Sản phẩm được làm từ nguồn sữa bò tươi nguyên chất, thanh trùng theo tiêu chuẩn an toàn thực phẩm. Giữ nguyên dưỡng chất tự nhiên, phù hợp cho cả gia đình.",
-    ingredients: "Sữa bò tươi nguyên chất, không chất bảo quản.",
-    expiry: "7 ngày kể từ ngày sản xuất",
-    storage: "Bảo quản 2–6°C, dùng trong 24h sau khi mở nắp.",
-    origin: "Việt Nam",
-    brand: "Um Bò Milk",
-    subCategory: "Thức uống có lợi",
-    usage:
-      "Lắc đều trước khi dùng. Uống lạnh hoặc hâm nóng tùy thích. Thích hợp cho bữa sáng hoặc bữa phụ.",
-  },
+const DETAIL_DEFAULT = {
+  description:
+    "Sản phẩm được làm từ nguồn sữa bò tươi nguyên chất, thanh trùng theo tiêu chuẩn an toàn thực phẩm. Giữ nguyên dưỡng chất tự nhiên, phù hợp cho cả gia đình.",
+  ingredients: "Sữa bò tươi nguyên chất, không chất bảo quản.",
+  expiry: "7 ngày kể từ ngày sản xuất",
+  storage: "Bảo quản 2–6°C, dùng trong 24h sau khi mở nắp.",
+  origin: "Việt Nam",
+  brand: "Um Bò Milk",
+  usage:
+    "Lắc đều trước khi dùng. Uống lạnh hoặc hâm nóng tùy thích. Thích hợp cho bữa sáng hoặc bữa phụ.",
 };
 
 const ACCORDION_ITEMS = [
@@ -61,12 +56,48 @@ function AccordionInfo({ label, value }) {
 
 export default function ProductDetailPage() {
   const { id } = useParams();
-  const product = products.find((p) => p.id === Number(id));
+  const [product, setProduct] = useState(null);
+  const [related, setRelated] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [qty, setQty] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
   const { addToCart, setDrawerOpen } = useCart();
 
-  if (!product) {
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch("/api/haravan/products");
+        if (!res.ok) throw new Error();
+        const allData = await res.json();
+
+        const found = allData.find((p) => String(p.id) === String(id));
+        if (!found) throw new Error();
+
+        setProduct(found);
+        setRelated(
+          allData
+            .filter((p) => p.category === found.category && p.id !== found.id)
+            .slice(0, 4)
+        );
+      } catch {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <main className="flex-1 bg-[#fff3f4] min-h-screen flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Đang tải sản phẩm...</p>
+      </main>
+    );
+  }
+
+  if (error || !product) {
     return (
       <main className="flex-1 bg-[#fff3f4] min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -79,10 +110,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  const detail = DETAIL_MAP[product.id] ?? DETAIL_MAP.default;
-  const related = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  const detail = DETAIL_DEFAULT;
 
   return (
     <main className="flex-1 bg-[#fff3f4] min-h-screen">
@@ -107,14 +135,19 @@ export default function ProductDetailPage() {
           >
             <div className="bg-white rounded-2xl shadow-sm p-6 flex items-center justify-center aspect-square overflow-hidden group">
               <div className="relative w-full h-full transition-transform duration-300 group-hover:scale-[1.03]">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-contain"
-                  priority
-                />
+                {product.image ? (
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-contain"
+                    priority
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-full h-full bg-[#fff0f1] rounded-xl" />
+                )}
               </div>
             </div>
           </div>
@@ -137,6 +170,22 @@ export default function ProductDetailPage() {
             <h1 className="text-2xl sm:text-3xl font-bold text-[#2d3748] leading-snug">
               {product.name}
             </h1>
+
+            {/* SKU + Stock */}
+            <div className="flex items-center gap-3 text-sm">
+              {product.sku && (
+                <span className="text-gray-400">
+                  Mã sản phẩm: <span className="font-semibold text-[#2d3748]">{product.sku}</span>
+                </span>
+              )}
+              {product.sku && <span className="text-gray-300">|</span>}
+              <span className="text-gray-400">
+                Tình trạng:{" "}
+                <span className={product.available !== false ? "font-semibold text-green-500" : "font-semibold text-red-500"}>
+                  {product.available !== false ? "Còn hàng" : "Hết hàng"}
+                </span>
+              </span>
+            </div>
 
             {/* Price */}
             <div className="flex items-center gap-3">
@@ -168,9 +217,10 @@ export default function ProductDetailPage() {
             )}
 
             {/* Short description */}
-            <p className="text-sm text-gray-500 leading-relaxed border-t border-gray-100 pt-4">
-              {detail.description}
-            </p>
+            <div
+              className="text-sm text-gray-500 leading-relaxed border-t border-gray-100 pt-4 prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: product.bodyHtml || detail.description }}
+            />
 
             {/* Quantity */}
             <div
@@ -185,9 +235,7 @@ export default function ProductDetailPage() {
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="w-10 text-center text-sm font-bold text-[#2d3748]">
-                  {qty}
-                </span>
+                <span className="w-10 text-center text-sm font-bold text-[#2d3748]">{qty}</span>
                 <button
                   onClick={() => setQty((q) => q + 1)}
                   className="w-9 h-9 flex items-center justify-center text-[#F7a3a9] hover:bg-[#fff0f1] transition-colors"
@@ -220,11 +268,7 @@ export default function ProductDetailPage() {
             {/* Accordion info */}
             <div className="border border-gray-100 rounded-xl p-4 bg-white mt-1">
               {ACCORDION_ITEMS.map((item) => (
-                <AccordionInfo
-                  key={item.key}
-                  label={item.label}
-                  value={detail[item.key]}
-                />
+                <AccordionInfo key={item.key} label={item.label} value={detail[item.key]} />
               ))}
             </div>
           </div>
@@ -252,7 +296,11 @@ export default function ProductDetailPage() {
             ))}
           </div>
           <div className="p-6 text-sm text-gray-500 leading-relaxed min-h-[100px]">
-            {activeTab === "description" && <p>{detail.description}</p>}
+            {activeTab === "description" && (
+              product.bodyHtml
+                ? <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: product.bodyHtml }} />
+                : <p>{detail.description}</p>
+            )}
             {activeTab === "ingredients" && <p>{detail.ingredients}</p>}
             {activeTab === "usage" && <p>{detail.usage}</p>}
           </div>
@@ -262,9 +310,7 @@ export default function ProductDetailPage() {
         {related.length > 0 && (
           <div className="mt-16">
             <div className="mb-6">
-              <h2 className="text-lg sm:text-xl font-bold text-[#2d3748]">
-                SẢN PHẨM LIÊN QUAN
-              </h2>
+              <h2 className="text-lg sm:text-xl font-bold text-[#2d3748]">SẢN PHẨM LIÊN QUAN</h2>
               <div className="mt-2 h-1 w-16 bg-[#F7a3a9] rounded-full" />
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">

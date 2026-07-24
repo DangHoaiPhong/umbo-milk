@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react";
+import placeholderImage from "@/assets/images/umboMilk.jpg";
 import { useCart } from "./CartContext";
 
 export default function CartDrawer() {
@@ -12,11 +13,10 @@ export default function CartDrawer() {
     totalPrice,
     removeFromCart,
     updateQty,
+    clearCart,
     drawerOpen,
     setDrawerOpen,
   } = useCart();
-
-  const clearCart = () => items.forEach((i) => removeFromCart(i.product.id));
   const overlayRef = useRef(null);
 
   useEffect(() => {
@@ -104,58 +104,66 @@ export default function CartDrawer() {
         ) : (
           <>
             <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
-              {items.map(({ product, qty }) => (
-                <div key={product.id} className="flex items-start gap-3">
-                  <div className="relative w-[72px] h-[72px] flex-shrink-0 rounded-xl overflow-hidden bg-[#fff3f4]">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      sizes="72px"
-                      className="object-contain p-1"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#2d3748] line-clamp-2 leading-snug">
-                      {product.name}
-                    </p>
-                    <p className="text-sm font-bold text-[#F7a3a9] mt-0.5">
-                      {product.price.toLocaleString("vi-VN")}đ
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <div className="flex items-center border border-[#f7d0d3] rounded-lg overflow-hidden">
+              {items.map(({ product, qty }) => {
+                const imageSrc =
+                  typeof product.image === "string" &&
+                  product.image.trim().length > 0
+                    ? product.image
+                    : placeholderImage;
+
+                return (
+                  <div key={product.id} className="flex items-start gap-3">
+                    <div className="relative w-[72px] h-[72px] flex-shrink-0 rounded-xl overflow-hidden bg-[#fff3f4]">
+                      <Image
+                        src={imageSrc}
+                        alt={product.name}
+                        fill
+                        sizes="72px"
+                        className="object-contain p-1"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[#2d3748] line-clamp-2 leading-snug">
+                        {product.name}
+                      </p>
+                      <p className="text-sm font-bold text-[#F7a3a9] mt-0.5">
+                        {product.price.toLocaleString("vi-VN")}đ
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center border border-[#f7d0d3] rounded-lg overflow-hidden">
+                          <button
+                            onClick={() => updateQty(product.id, qty - 1)}
+                            aria-label="Giảm"
+                            className="w-7 h-7 flex items-center justify-center text-[#F7a3a9] hover:bg-[#fff3f4] transition-colors"
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <span className="min-w-[28px] text-center text-xs font-bold text-[#2d3748] select-none">
+                            {qty}
+                          </span>
+                          <button
+                            onClick={() => updateQty(product.id, qty + 1)}
+                            aria-label="Tăng"
+                            className="w-7 h-7 flex items-center justify-center text-[#F7a3a9] hover:bg-[#fff3f4] transition-colors"
+                          >
+                            <Plus size={12} />
+                          </button>
+                        </div>
                         <button
-                          onClick={() => updateQty(product.id, qty - 1)}
-                          aria-label="Giảm"
-                          className="w-7 h-7 flex items-center justify-center text-[#F7a3a9] hover:bg-[#fff3f4] transition-colors"
+                          onClick={() => removeFromCart(product.id)}
+                          aria-label="Xóa"
+                          className="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors"
                         >
-                          <Minus size={12} />
-                        </button>
-                        <span className="min-w-[28px] text-center text-xs font-bold text-[#2d3748] select-none">
-                          {qty}
-                        </span>
-                        <button
-                          onClick={() => updateQty(product.id, qty + 1)}
-                          aria-label="Tăng"
-                          className="w-7 h-7 flex items-center justify-center text-[#F7a3a9] hover:bg-[#fff3f4] transition-colors"
-                        >
-                          <Plus size={12} />
+                          <Trash2 size={13} />
                         </button>
                       </div>
-                      <button
-                        onClick={() => removeFromCart(product.id)}
-                        aria-label="Xóa"
-                        className="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={13} />
-                      </button>
                     </div>
+                    <p className="text-xs font-bold text-[#2d3748] whitespace-nowrap flex-shrink-0">
+                      {(product.price * qty).toLocaleString("vi-VN")}đ
+                    </p>
                   </div>
-                  <p className="text-xs font-bold text-[#2d3748] whitespace-nowrap flex-shrink-0">
-                    {(product.price * qty).toLocaleString("vi-VN")}đ
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Footer */}

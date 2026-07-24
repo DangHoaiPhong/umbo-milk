@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { X, ArrowRight, ShoppingCart, Plus, Minus } from "lucide-react";
+import placeholderImage from "@/assets/images/umboMilk.jpg";
 import { useQuickView } from "./QuickViewContext";
 import { useCart } from "./CartContext";
 
@@ -48,7 +49,14 @@ export default function QuickViewModal() {
 
   if (!product) return null;
 
-  const images = product.images ?? [product.image];
+  const rawImages = Array.isArray(product.images)
+    ? product.images.filter(
+        (img) => typeof img === "string" && img.trim().length > 0,
+      )
+    : [product.image].filter(
+        (img) => typeof img === "string" && img.trim().length > 0,
+      );
+  const images = rawImages.length > 0 ? rawImages : [placeholderImage];
   const { name, category, price, oldPrice, discount, isNew, volume } = product;
 
   return (
@@ -193,8 +201,12 @@ export default function QuickViewModal() {
 
             {/* 5. Thêm vào giỏ */}
             <button
-              onClick={() => { addToCart(product, qty); handleClose(); }}
-              className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#F7a3a9] text-white text-sm font-bold rounded-xl shadow-[0_4px_14px_rgba(247,163,169,0.35)] hover:bg-[#f08a91] hover:scale-[1.02] hover:shadow-[0_6px_20px_rgba(247,163,169,0.45)] transition-all duration-200 cursor-pointer">
+              onClick={() => {
+                addToCart(product, qty);
+                handleClose();
+              }}
+              className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#F7a3a9] text-white text-sm font-bold rounded-xl shadow-[0_4px_14px_rgba(247,163,169,0.35)] hover:bg-[#f08a91] hover:scale-[1.02] hover:shadow-[0_6px_20px_rgba(247,163,169,0.45)] transition-all duration-200 cursor-pointer"
+            >
               <ShoppingCart size={18} />
               Thêm vào giỏ
             </button>

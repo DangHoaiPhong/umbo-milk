@@ -21,13 +21,12 @@ export const footerData = {
   ],
 
   intro: [
-    { label: "Sản phẩm khuyến mãi", href: "/products?filter=sale" },
+    { label: "Sản phẩm", href: "/products?filter=sale" },
     { label: "Sản phẩm nổi bật", href: "/products?filter=featured" },
     { label: "Tất cả sản phẩm", href: "/products" },
   ],
 
   links: [
-    { label: "Tìm kiếm", href: "/search" },
     { label: "Giới thiệu", href: "/about" },
     { label: "Chính sách đổi trả", href: "/chinh-sach-doi-tra" },
     { label: "Chính sách bảo mật", href: "/chinh-sach-bao-mat" },

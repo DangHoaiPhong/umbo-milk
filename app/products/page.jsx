@@ -1,25 +1,36 @@
 "use client";
-import { useState, useRef } from "react";
-import { products } from "@/data/products";
+import { useState, useRef, useEffect, useMemo } from "react";
 import ProductCard from "@/components/ProductCard";
 
 const CATEGORIES = [
-  "Sữa",
-  "Váng sữa",
-  "Combo",
-  "Đồ ăn vặt/Bánh kẹo",
-  "Sản phẩm khác",
+  { label: "Sữa",                  values: ["sua"]                   },
+  { label: "Váng sữa",             values: ["vang-sua"]              },
+  { label: "Combo",                values: ["combo"]                 },
+  { label: "Đồ ăn vặt/Bánh kẹo",  values: ["do-an-vat"]             },
+  { label: "Sản phẩm khác",        values: ["khac", "phu-kien"]      },
 ];
 
 const STORES = [
-  { label: "CN 1: 111 Tôn Đản, Quận 4", key: "CN1" },
+  { label: "CN 1: 111 Tôn Đản, Quận 4",           key: "CN1" },
   { label: "CN 2: 120 Hoàng Diệu 2, Quận Thủ Đức", key: "CN2" },
-  { label: "CN 3: 261 Tô Hiến Thành, Quận 10", key: "CN3" },
-  { label: "CN 4: 130 Vạn Kiếp, Quận Bình Thạnh", key: "CN4" },
+  { label: "CN 3: 261 Tô Hiến Thành, Quận 10",     key: "CN3" },
+  { label: "CN 4: 130 Vạn Kiếp, Quận Bình Thạnh",  key: "CN4" },
 ];
 
-const EXCLUDED = ["Combo", "Sản phẩm khác"];
 const PAGE_SIZE = 8;
+
+const DEFAULT_CATEGORIES = ["sua", "vang-sua", "do-an-vat"];
+
+function filterProducts(products, selectedCategoryKeys, stores) {
+  const slugs = selectedCategoryKeys.length > 0
+    ? selectedCategoryKeys.flatMap((key) => CATEGORIES.find((c) => c.label === key)?.values ?? [key])
+    : DEFAULT_CATEGORIES;
+  return products.filter((p) => {
+    const categoryMatch = slugs.includes(p.category);
+    const storeMatch    = stores.length === 0 || p.stores?.some((s) => stores.includes(s));
+    return categoryMatch && storeMatch;
+  });
+}
 
 function AccordionGroup({ title, items, checked, onChange }) {
   const [open, setOpen] = useState(false);
@@ -72,40 +83,48 @@ function AccordionGroup({ title, items, checked, onChange }) {
 }
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedStores, setSelectedStores] = useState([]);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const newStartRef = useRef(0);
 
-  const toggleCategory = (item) => {
-    setSelectedCategories((prev) =>
-      prev.includes(item) ? prev.filter((v) => v !== item) : [...prev, item],
-    );
-    newStartRef.current = 0;
-    setVisibleCount(PAGE_SIZE);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch("/api/haravan/products");
+        if (!res.ok) throw new Error(`Lỗi ${res.status}`);
+        const data = await res.json();
+        setProducts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const toggle = (setter) => (item) => {
+    setter((prev) => prev.includes(item) ? prev.filter((v) => v !== item) : [...prev, item]);
   };
 
-  const toggleStore = (item) => {
-    setSelectedStores((prev) =>
-      prev.includes(item) ? prev.filter((v) => v !== item) : [...prev, item],
-    );
-    newStartRef.current = 0;
-    setVisibleCount(PAGE_SIZE);
+  const resetFilters = () => {
+    setSelectedCategories([]);
+    setSelectedStores([]);
   };
 
-  const filteredProducts = products.filter((p) => {
-    const categoryMatch =
-      selectedCategories.length > 0
-        ? selectedCategories.includes(p.category)
-        : !EXCLUDED.includes(p.category);
+  const filteredProducts = useMemo(
+    () => filterProducts(products, selectedCategories, selectedStores),
+    [products, selectedCategories, selectedStores],
+  );
 
-    const storeMatch =
-      selectedStores.length > 0
-        ? p.stores?.some((s) => selectedStores.includes(s))
-        : true;
-
-    return categoryMatch && storeMatch;
-  });
+  useEffect(() => {
+    newStartRef.current = 0;
+    setVisibleCount(PAGE_SIZE);
+  }, [selectedCategories, selectedStores]);
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = visibleCount < filteredProducts.length;
@@ -133,15 +152,15 @@ export default function ProductsPage() {
             <div className="bg-white rounded-2xl shadow-sm p-4">
               <AccordionGroup
                 title="Danh mục sản phẩm"
-                items={CATEGORIES}
+                items={CATEGORIES.map((c) => ({ key: c.label, label: c.label }))}
                 checked={selectedCategories}
-                onChange={toggleCategory}
+                onChange={toggle(setSelectedCategories)}
               />
               <AccordionGroup
                 title="Các cửa hàng"
                 items={STORES}
                 checked={selectedStores}
-                onChange={toggleStore}
+                onChange={toggle(setSelectedStores)}
               />
             </div>
           </aside>
@@ -166,10 +185,25 @@ export default function ProductsPage() {
               ))}
             </div>
 
-            {filteredProducts.length === 0 && (
-              <p className="text-center text-gray-400 text-sm py-16">
-                Không có sản phẩm nào phù hợp.
-              </p>
+            {loading && (
+              <p className="text-center text-gray-400 text-sm py-16">Đang tải sản phẩm...</p>
+            )}
+            {!loading && error && (
+              <p className="text-center text-red-400 text-sm py-16">Không thể tải sản phẩm: {error}</p>
+            )}
+            {!loading && !error && filteredProducts.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                <span className="text-5xl">📦</span>
+                <p className="text-gray-500 font-medium">Không tìm thấy sản phẩm phù hợp.</p>
+                {(selectedCategories.length > 0 || selectedStores.length > 0) && (
+                  <button
+                    onClick={resetFilters}
+                    className="mt-1 px-6 py-2 text-sm font-semibold text-white bg-[#F7a3a9] rounded-full hover:bg-[#f08a91] transition-colors"
+                  >
+                    Xóa bộ lọc
+                  </button>
+                )}
+              </div>
             )}
 
             <div className="mt-8 flex justify-center">

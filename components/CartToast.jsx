@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { X, CheckCircle2 } from "lucide-react";
+import placeholderImage from "@/assets/images/umboMilk.jpg";
 import { useCart } from "./CartContext";
 
 export default function CartToast() {
@@ -45,6 +46,10 @@ export default function CartToast() {
   if (!toast) return null;
 
   const { product } = toast;
+  const imageSrc =
+    typeof product.image === "string" && product.image.trim().length > 0
+      ? product.image
+      : placeholderImage;
   const topOffset = (headerH || 70) + 12;
 
   return (
@@ -95,8 +100,14 @@ export default function CartToast() {
       <div className="umbo-toast">
         <div
           className="umbo-toast-inner"
-          onMouseEnter={() => { hoverRef.current = true; clearTimeout(timerRef.current); }}
-          onMouseLeave={() => { hoverRef.current = false; startTimer(); }}
+          onMouseEnter={() => {
+            hoverRef.current = true;
+            clearTimeout(timerRef.current);
+          }}
+          onMouseLeave={() => {
+            hoverRef.current = false;
+            startTimer();
+          }}
         >
           {/* Thanh màu thương hiệu */}
           <div className="h-1 w-full bg-gradient-to-r from-[#F7a3a9] to-[#f7c5c8]" />
@@ -126,7 +137,7 @@ export default function CartToast() {
             <div className="flex items-center gap-2.5">
               <div className="relative w-[52px] h-[52px] sm:w-[64px] sm:h-[64px] flex-shrink-0 rounded-xl overflow-hidden bg-[#fff3f4]">
                 <Image
-                  src={product.image}
+                  src={imageSrc}
                   alt={product.name}
                   fill
                   sizes="64px"

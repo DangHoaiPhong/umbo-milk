@@ -2,8 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { popularProducts, bannerImage } from "@/data/popularProducts";
-import { products } from "@/data/products";
+import placeholderImage from "@/assets/images/umboMilk.jpg";
+import bannerImg from "@/assets/images/popularbanner.jpg";
 
 const formatPrice = (p) => p.toLocaleString("vi-VN") + "đ";
 
@@ -16,9 +16,23 @@ const BgDecor = () => (
     preserveAspectRatio="xMidYMid slice"
   >
     {/* Blob trái trên */}
-    <ellipse cx="5%" cy="12%" rx="120" ry="80" fill="#F7a3a9" fillOpacity="0.12" />
+    <ellipse
+      cx="5%"
+      cy="12%"
+      rx="120"
+      ry="80"
+      fill="#F7a3a9"
+      fillOpacity="0.12"
+    />
     {/* Blob phải dưới */}
-    <ellipse cx="95%" cy="88%" rx="150" ry="100" fill="#F7a3a9" fillOpacity="0.10" />
+    <ellipse
+      cx="95%"
+      cy="88%"
+      rx="150"
+      ry="100"
+      fill="#F7a3a9"
+      fillOpacity="0.10"
+    />
     {/* Mây nhỏ giữa trên */}
     <ellipse cx="50%" cy="4%" rx="200" ry="40" fill="#fff" fillOpacity="0.35" />
     {/* Chấm trang trí */}
@@ -46,42 +60,58 @@ const BgDecor = () => (
 
 /* ── Item sản phẩm ── */
 const ProductItem = ({ item, index, visible }) => {
-  const matched = products.find((p) => p.name === item.name);
-  const href = matched ? `/products/${matched.id}` : "/products";
+  const href = item.id ? `/products/${item.id}` : "/products";
+  const imageSrc =
+    typeof item.image === "string" && item.image.trim().length > 0
+      ? item.image
+      : placeholderImage;
+
   return (
-  <Link
-    href={href}
-    className="flex items-center gap-4 bg-white/80 backdrop-blur-sm border border-[#F7a3a9]/20 rounded-2xl px-5 py-4 cursor-pointer hover:-translate-y-1 hover:shadow-md hover:shadow-[#F7a3a9]/20 hover:bg-white"
-    style={{
-      opacity: visible ? 1 : 0,
-      transform: visible ? "translateY(0)" : "translateY(22px)",
-      transition: `opacity 400ms ease ${index * 100}ms, transform 400ms ease ${index * 100}ms, box-shadow 280ms ease, background 280ms ease`,
-    }}
-  >
-    {/* Ảnh */}
-    <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-xl overflow-hidden bg-[#FFF1F5]">
-      <Image src={item.image} alt={item.name} fill sizes="76px" className="object-contain p-1" />
-    </div>
+    <Link
+      href={href}
+      className="flex items-center gap-4 bg-white/80 backdrop-blur-sm border border-[#F7a3a9]/20 rounded-2xl px-5 py-4 cursor-pointer hover:-translate-y-1 hover:shadow-md hover:shadow-[#F7a3a9]/20 hover:bg-white"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(22px)",
+        transition: `opacity 400ms ease ${index * 100}ms, transform 400ms ease ${index * 100}ms, box-shadow 280ms ease, background 280ms ease`,
+      }}
+    >
+      {/* Ảnh */}
+      <div className="relative w-[76px] h-[76px] flex-shrink-0 rounded-xl overflow-hidden bg-[#FFF1F5]">
+        <Image
+          src={imageSrc}
+          alt={item.name}
+          fill
+          sizes="76px"
+          className="object-contain p-1"
+        />
+      </div>
 
-    {/* Nội dung */}
-    <div className="flex-1 min-w-0">
-      <h3 className="font-bold text-[#2d3748] text-sm leading-snug">{item.name}</h3>
-      <p className="text-gray-400 text-xs mt-1 line-clamp-2 leading-relaxed">{item.description}</p>
-    </div>
+      {/* Nội dung */}
+      <div className="flex-1 min-w-0">
+        <h3 className="font-bold text-[#2d3748] text-sm leading-snug">
+          {item.name}
+        </h3>
+        <p className="text-gray-400 text-xs mt-1 line-clamp-2 leading-relaxed">
+          {item.description}
+        </p>
+      </div>
 
-    {/* Divider dọc */}
-    <div className="self-stretch w-px bg-[#F7a3a9]/20 mx-1 flex-shrink-0" />
+      {/* Divider dọc */}
+      <div className="self-stretch w-px bg-[#F7a3a9]/20 mx-1 flex-shrink-0" />
 
-    {/* Giá */}
-    <div className="flex-shrink-0 text-right min-w-[72px]">
-      <span className="text-[#F7a3a9] font-bold text-sm whitespace-nowrap block">
-        {formatPrice(item.price)}
-      </span>
-      {!item.inStock && (
-        <span className="text-red-300 text-[11px] font-medium mt-0.5 block">Hết hàng</span>
-      )}
-    </div>
-  </Link>
+      {/* Giá */}
+      <div className="flex-shrink-0 text-right min-w-[72px]">
+        <span className="text-[#F7a3a9] font-bold text-sm whitespace-nowrap block">
+          {formatPrice(item.price)}
+        </span>
+        {!item.inStock && (
+          <span className="text-red-300 text-[11px] font-medium mt-0.5 block">
+            Hết hàng
+          </span>
+        )}
+      </div>
+    </Link>
   );
 };
 
@@ -89,22 +119,85 @@ const ProductItem = ({ item, index, visible }) => {
 const PopularSection = () => {
   const sectionRef = useRef(null);
   const [visible, setVisible] = useState(false);
+  const [popularProducts, setPopularProducts] = useState([]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
-      { threshold: 0.1 }
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 },
     );
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch("/api/haravan/products");
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const payload = Array.isArray(data) ? data : (data.products ?? []);
+
+        const requiredSlugs = [
+          "bo-de-cuoi",
+          "bo-matcha-nhat-ban",
+          "bo-sua-olong-tra",
+        ];
+
+        const prioritized = payload.filter((p) => {
+          const title = String(p.title ?? p.name ?? "").toLowerCase();
+          return requiredSlugs.some((slug) => title.includes(slug));
+        });
+
+        const rest = payload.filter((p) => {
+          const title = String(p.title ?? p.name ?? "").toLowerCase();
+          return !requiredSlugs.some((slug) => title.includes(slug));
+        });
+
+        const nextProducts = [
+          ...prioritized,
+          ...rest.filter((p) => {
+            const category = String(p.category ?? "").toLowerCase();
+            const title = String(p.title ?? p.name ?? "").toLowerCase();
+            return (
+              category === "sua" ||
+              category === "vang-sua" ||
+              title.includes("sua") ||
+              title.includes("vang sua")
+            );
+          }),
+        ].slice(0, 6);
+
+        setPopularProducts(
+          nextProducts.map((p) => ({
+            ...p,
+            name: p.title ?? p.name ?? "Sản phẩm",
+            description: p.volume || p.variant?.title || "",
+            price: Number(p.price ?? p.variant?.price ?? 0) || 0,
+            image: p.image ?? p.images?.[0]?.src ?? "",
+            inStock: true,
+          })),
+        );
+      } catch {
+        // giữ nguyên mảng rỗng nếu lỗi
+      }
+    };
+    load();
+  }, []);
+
   return (
-    <section ref={sectionRef} className="relative w-full bg-[#FFF1F5] overflow-hidden py-20 px-4">
+    <section
+      ref={sectionRef}
+      className="relative w-full bg-[#FFF1F5] overflow-hidden py-20 px-4"
+    >
       <BgDecor />
 
       <div className="relative z-10 max-w-[1200px] mx-auto">
-
         {/* Header */}
         <div
           className="text-center mb-10"
@@ -125,23 +218,23 @@ const PopularSection = () => {
 
         {/* Body: mobile = 1 cột (header → banner → list), desktop = 2 cột (list | banner) */}
         <div className="flex flex-col lg:flex-row gap-9">
-
           {/* Banner — mobile: trên list, desktop: cột phải */}
           <div
             className="order-first lg:order-last lg:w-[35%]"
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? "translateX(0)" : "translateX(28px)",
-              transition: "opacity 550ms ease 200ms, transform 550ms ease 200ms",
+              transition:
+                "opacity 550ms ease 200ms, transform 550ms ease 200ms",
             }}
           >
-            <div className="relative w-full rounded-3xl overflow-hidden shadow-lg shadow-[#F7a3a9]/20 group lg:sticky lg:top-24 aspect-[3/4] sm:aspect-[16/9] lg:aspect-auto lg:h-full lg:min-h-[420px]">
+            <div className="relative w-full rounded-3xl overflow-hidden shadow-lg shadow-[#F7a3a9]/20 group lg:sticky lg:top-24 aspect-[3/4] sm:aspect-[16/9] lg:aspect-auto lg:h-full lg:min-h-[420px] transition-all duration-500 ease-out hover:-translate-y-1 hover:shadow-xl hover:shadow-[#F7a3a9]/30">
               <Image
-                src={bannerImage}
+                src={bannerImg}
                 alt="Sản phẩm nổi bật Um Bò Milk"
                 fill
                 sizes="(max-width: 1024px) 100vw, 35vw"
-                className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                className="object-contain transition-transform duration-500 ease-out group-hover:scale-[1.02]"
               />
               {/* Overlay gradient nhẹ */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#F7a3a9]/30 via-transparent to-transparent" />
@@ -157,10 +250,14 @@ const PopularSection = () => {
           {/* Danh sách sản phẩm — cột trái desktop */}
           <div className="order-last lg:order-first lg:w-[65%] flex flex-col gap-3">
             {popularProducts.map((item, i) => (
-              <ProductItem key={item.id} item={item} index={i} visible={visible} />
+              <ProductItem
+                key={item.id}
+                item={item}
+                index={i}
+                visible={visible}
+              />
             ))}
           </div>
-
         </div>
       </div>
     </section>

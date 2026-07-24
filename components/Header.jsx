@@ -5,7 +5,6 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import umboMilk from "../assets/images/umboMilk.jpg";
 import LoginDrawer from "./LoginDrawer";
-import { products } from "../data/products";
 import { useCart } from "./CartContext";
 
 const ACCOUNT_STORAGE_KEY = "umbo_account_profile";
@@ -28,10 +27,9 @@ const Header = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  // desktop search state
   const [searchOpen, setSearchOpen] = useState(false);
-  // shared query (mobile bar + desktop dropdown dùng chung)
   const [searchQuery, setSearchQuery] = useState("");
+  const [allProducts, setAllProducts] = useState([]);
 
   const headerRef = useRef(null);
   const loginBtnRef = useRef(null);
@@ -41,13 +39,20 @@ const Header = () => {
 
   const LIMIT = 5;
   const filtered = searchQuery.trim()
-    ? products.filter((p) =>
+    ? allProducts.filter((p) =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : [];
   const shown = filtered.slice(0, LIMIT);
   const extra = filtered.length - LIMIT;
   const dropdownOpen = searchQuery.trim().length > 0;
+
+  useEffect(() => {
+    fetch("/api/haravan/products")
+      .then((r) => r.ok ? r.json() : [])
+      .then((data) => setAllProducts(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
 
   const closeDesktopSearch = () => {
     setSearchOpen(false);
@@ -207,31 +212,42 @@ const Header = () => {
       ) : (
         shown.map((p, i) => (
           <div key={p.id}>
-            <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[#fff0f1] transition-colors duration-200 group">
+            <Link
+              href={`/products/${p.id}`}
+              onClick={closeDesktopSearch}
+              className="flex items-center justify-between px-4 py-3 hover:bg-[#fff0f1] transition-colors duration-200 group"
+            >
               <div>
                 <p className="text-sm font-medium text-gray-800">{p.name}</p>
                 <p className="text-sm text-[#F7a3a9] font-semibold mt-0.5">
                   {p.price.toLocaleString("vi-VN")}đ
                 </p>
               </div>
-              <div className="ml-3 w-10 h-10 shrink-0 overflow-hidden rounded-lg">
-                <Image
-                  src={p.image}
-                  alt={p.name}
-                  width={40}
-                  height={40}
-                  className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
-                />
+              <div className="ml-3 w-10 h-10 shrink-0 overflow-hidden rounded-lg bg-[#fff0f1]">
+                {p.image && (
+                  <Image
+                    src={p.image}
+                    alt={p.name}
+                    width={40}
+                    height={40}
+                    unoptimized
+                    className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
+                  />
+                )}
               </div>
-            </div>
+            </Link>
             {i < shown.length - 1 && <div className="mx-4 h-px bg-gray-100" />}
           </div>
         ))
       )}
       {extra > 0 && (
-        <button className="w-full text-center text-sm text-[#F7a3a9] hover:text-[#e07a82] py-3 font-medium transition-colors duration-200">
+        <Link
+          href={`/products?q=${encodeURIComponent(searchQuery)}`}
+          onClick={closeDesktopSearch}
+          className="block w-full text-center text-sm text-[#F7a3a9] hover:text-[#e07a82] py-3 font-medium transition-colors duration-200"
+        >
           Xem thêm {extra} sản phẩm
-        </button>
+        </Link>
       )}
     </div>
   );

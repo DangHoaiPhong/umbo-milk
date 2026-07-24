@@ -2,74 +2,133 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { menuItems, promotions } from "@/data/menuSuggested";
-import { products } from "@/data/products";
+import placeholderImage from "@/assets/images/umboMilk.jpg";
+import { promotions } from "@/data/menuSuggested";
 
 const formatPrice = (p) => p.toLocaleString("vi-VN") + "đ";
 
+const getShortText = (value, fallback = "") => {
+  if (!value) return fallback;
+  return String(value)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 const MenuItem = ({ item, index, visible }) => {
-  const matched = products.find((p) => p.name === item.name);
-  const href = matched ? `/products/${matched.id}` : "/products";
+  const href = item.id ? `/products/${item.id}` : "/products";
+  const imageSrc =
+    typeof item.image === "string" && item.image.trim().length > 0
+      ? item.image
+      : placeholderImage;
+
   return (
-  <Link
-    href={href}
-    className="flex items-center gap-4 bg-white border border-[#F7a3a9]/20 rounded-2xl p-5 cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-[#F7a3a9]/15"
-    style={{
-      opacity: visible ? 1 : 0,
-      transform: visible ? "translateY(0)" : "translateY(20px)",
-      transition: `opacity 400ms ease ${index * 100}ms, transform 400ms ease ${index * 100}ms, box-shadow 300ms ease, translate 300ms ease`,
-    }}
-  >
-    {/* Ảnh */}
-    <div className="relative w-[80px] h-[80px] flex-shrink-0 rounded-xl overflow-hidden bg-[#FFF1F5]">
-      <Image
-        src={item.image}
-        alt={item.name}
-        fill
-        sizes="80px"
-        className="object-contain p-1"
-      />
-    </div>
+    <Link
+      href={href}
+      className="flex items-center gap-4 bg-white border border-[#F7a3a9]/20 rounded-2xl p-5 cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-[#F7a3a9]/15"
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(20px)",
+        transition: `opacity 400ms ease ${index * 100}ms, transform 400ms ease ${index * 100}ms, box-shadow 300ms ease, translate 300ms ease`,
+      }}
+    >
+      {/* Ảnh */}
+      <div className="relative w-[80px] h-[80px] flex-shrink-0 rounded-xl overflow-hidden bg-[#FFF1F5]">
+        <Image
+          src={imageSrc}
+          alt={item.name}
+          fill
+          sizes="80px"
+          className="object-contain p-1"
+        />
+      </div>
 
-    {/* Nội dung */}
-    <div className="flex-1 min-w-0">
-      <h3 className="font-bold text-[#2d3748] text-sm leading-snug">{item.name}</h3>
-      <p className="text-gray-400 text-xs mt-1 line-clamp-2 leading-relaxed">
-        {item.description}
-      </p>
-    </div>
+      {/* Nội dung */}
+      <div className="flex-1 min-w-0">
+        <h3 className="font-bold text-[#2d3748] text-sm leading-snug">
+          {item.name}
+        </h3>
+        <p className="text-[#F7a3a9] text-xs mt-1 line-clamp-2 leading-relaxed">
+          {item.extraDescription}
+        </p>
+      </div>
 
-    {/* Giá */}
-    <div className="flex-shrink-0 text-right ml-2">
-      {item.inStock ? (
-        <span className="text-[#F7a3a9] font-bold text-sm whitespace-nowrap">
-          {formatPrice(item.price)}
-        </span>
-      ) : (
-        <span className="text-red-300 text-xs font-medium">Hết hàng</span>
-      )}
-    </div>
-  </Link>
+      {/* Giá */}
+      <div className="flex-shrink-0 text-right ml-2">
+        {item.inStock ? (
+          <span className="text-[#F7a3a9] font-bold text-sm whitespace-nowrap">
+            {formatPrice(item.price)}
+          </span>
+        ) : (
+          <span className="text-red-300 text-xs font-medium">Hết hàng</span>
+        )}
+      </div>
+    </Link>
   );
 };
 
 const MenuSuggested = () => {
   const sectionRef = useRef(null);
   const [visible, setVisible] = useState(false);
+  const [menuItems, setMenuItems] = useState([]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
-      { threshold: 0.1 }
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 },
     );
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch("/api/haravan/products");
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const payload = Array.isArray(data) ? data : (data.products ?? []);
+
+        const milkItems = payload
+          .filter((p) => {
+            const category = String(p.category ?? "").toLowerCase();
+            const name = String(p.name ?? p.title ?? "").toLowerCase();
+            return (
+              category === "sua" ||
+              category === "vang-sua" ||
+              name.includes("sua") ||
+              name.includes("vang sua")
+            );
+          })
+          .slice(0, 6)
+          .map((p) => ({
+            id: p.id,
+            name: p.title ?? p.name ?? "Sản phẩm",
+            extraDescription: getShortText(
+              p.bodyHtml || p.description || "Sản phẩm sữa chất lượng",
+            ),
+            price: Number(p.price ?? p.variant?.price ?? 0) || 0,
+            image: p.image ?? p.images?.[0]?.src ?? "",
+            inStock: true,
+          }));
+
+        setMenuItems(milkItems);
+      } catch {
+        // giữ nguyên mảng rỗng nếu lỗi
+      }
+    };
+    load();
+  }, []);
+
   return (
     <section ref={sectionRef} className="w-full bg-[#FFF1F5] py-16 px-4">
       <div className="max-w-[1200px] mx-auto">
-
         {/* Header */}
         <div
           className="text-center mb-10"
@@ -90,7 +149,6 @@ const MenuSuggested = () => {
 
         {/* 2 cột */}
         <div className="flex flex-col lg:flex-row gap-9">
-
           {/* Cột trái — danh sách sản phẩm */}
           <div className="flex flex-col gap-3 lg:w-[70%]">
             {menuItems.map((item, i) => (
@@ -104,7 +162,8 @@ const MenuSuggested = () => {
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? "translateX(0)" : "translateX(24px)",
-              transition: "opacity 500ms ease 300ms, transform 500ms ease 300ms",
+              transition:
+                "opacity 500ms ease 300ms, transform 500ms ease 300ms",
             }}
           >
             <div className="bg-white border border-[#F7a3a9]/20 rounded-2xl overflow-hidden sticky top-24">
@@ -118,7 +177,10 @@ const MenuSuggested = () => {
               {/* Danh sách ưu đãi */}
               <ul className="px-6 py-5 flex flex-col gap-3">
                 {promotions.map((promo, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-[#2d3748]">
+                  <li
+                    key={i}
+                    className="flex items-start gap-3 text-sm text-[#2d3748]"
+                  >
                     <span className="mt-0.5 w-5 h-5 flex-shrink-0 rounded-full bg-[#FFF1F5] flex items-center justify-center">
                       <span className="w-2 h-2 rounded-full bg-[#F7a3a9] block" />
                     </span>
@@ -131,12 +193,12 @@ const MenuSuggested = () => {
               <div className="px-6 pb-5">
                 <div className="h-px bg-[#F7a3a9]/20 mb-4" />
                 <p className="text-xs text-gray-400 leading-relaxed">
-                  Ưu đãi áp dụng tại tất cả chi nhánh Um Bò Milk. Liên hệ để biết thêm chi tiết.
+                  Ưu đãi áp dụng tại tất cả chi nhánh Um Bò Milk. Liên hệ để
+                  biết thêm chi tiết.
                 </p>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </section>

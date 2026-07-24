@@ -29,13 +29,15 @@ const ProductCard = ({ product }) => {
 
         {/* Image */}
         <div className="relative w-full h-48 overflow-hidden rounded-xl mb-4">
-          <Image
-            src={image}
-            alt={name}
-            fill
-            sizes="(max-width: 768px) 100vw, 300px"
-            className="object-contain transition-transform duration-300 ease-in-out group-hover:scale-[1.08]"
-          />
+          {image && (
+            <Image
+              src={image}
+              alt={name}
+              fill
+              sizes="(max-width: 768px) 100vw, 300px"
+              className="object-contain transition-transform duration-300 ease-in-out group-hover:scale-[1.08]"
+            />
+          )}
 
           {/* Overlay */}
           <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
@@ -73,7 +75,10 @@ const ProductCard = ({ product }) => {
             </button>
             <button
               aria-label="Thêm vào giỏ hàng"
-              onClick={(e) => { e.preventDefault(); addToCart(product); }}
+              onClick={(e) => {
+                e.preventDefault();
+                addToCart(product);
+              }}
               className="w-11 h-11 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ease-out hover:bg-[#F7a3a9] group/cart"
             >
               <ShoppingCart className="w-5 h-5 text-[#F7a3a9] group-hover/cart:text-white transition-colors" />
@@ -103,7 +108,10 @@ const ProductCard = ({ product }) => {
             {/* Cart button — mobile only */}
             <button
               aria-label="Thêm vào giỏ hàng"
-              onClick={(e) => { e.preventDefault(); addToCart(product); }}
+              onClick={(e) => {
+                e.preventDefault();
+                addToCart(product);
+              }}
               className="sm:hidden w-8 h-8 rounded-full bg-[#F7a3a9] flex items-center justify-center shadow-sm active:scale-90 transition-transform flex-shrink-0"
             >
               <ShoppingCart className="w-4 h-4 text-white" />

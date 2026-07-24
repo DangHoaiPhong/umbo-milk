@@ -4,69 +4,71 @@ import { useState } from "react";
 const BRANCHES = [
   {
     id: 1,
-    name: "Chi nhánh Quận 1",
-    address: "123 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM",
-    lat: 10.7769,
-    lng: 106.7009,
+    name: "Chi nhánh 1",
+    address: "111 Tôn Đản, Quận 4, TP.HCM",
   },
   {
     id: 2,
-    name: "Chi nhánh Quận 3",
-    address: "45 Võ Văn Tần, Phường 6, Quận 3, TP.HCM",
-    lat: 10.7756,
-    lng: 106.6877,
+    name: "Chi nhánh 2",
+    address: "120 Hoàng Diệu 2, Quận Thủ Đức, TP.HCM",
   },
   {
     id: 3,
-    name: "Chi nhánh Bình Thạnh",
-    address: "78 Đinh Bộ Lĩnh, Phường 26, Bình Thạnh, TP.HCM",
-    lat: 10.8031,
-    lng: 106.7143,
+    name: "Chi nhánh 3",
+    address: "261 Tô Hiến Thành, Quận 10, TP.HCM",
   },
   {
     id: 4,
-    name: "Chi nhánh Gò Vấp",
-    address: "210 Quang Trung, Phường 10, Gò Vấp, TP.HCM",
-    lat: 10.8384,
-    lng: 106.6652,
+    name: "Chi nhánh 4",
+    address: "130 Vạn Kiếp, Quận Bình Thạnh, TP.HCM",
   },
 ];
 
+function getEmbedUrl(branch) {
+  if (branch.lat && branch.lng)
+    return `https://www.google.com/maps?q=${branch.lat},${branch.lng}&output=embed`;
+  if (branch.address)
+    return `https://www.google.com/maps?q=${encodeURIComponent(branch.address)}&output=embed`;
+  return null;
+}
+
+function getOpenUrl(branch) {
+  if (branch.lat && branch.lng)
+    return `https://www.google.com/maps?q=${branch.lat},${branch.lng}`;
+  return `https://www.google.com/maps?q=${encodeURIComponent(branch.address)}`;
+}
+
 export default function StoreMap() {
-  const [selected, setSelected] = useState(BRANCHES[0].id);
-  const activeBranch = BRANCHES.find((b) => b.id === selected);
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${activeBranch.lat},${activeBranch.lng}`;
+  const [selectedId, setSelectedId] = useState(BRANCHES[0].id);
+  const store = BRANCHES.find((b) => b.id === selectedId) ?? BRANCHES[0];
+  const embedUrl = getEmbedUrl(store);
 
   return (
     <div className="flex flex-col sm:flex-row h-full min-h-[400px]">
-      {/* Map placeholder */}
+      {/* Map */}
       <div className="relative sm:w-[60%] w-full h-64 sm:h-auto">
         <a
-          href={mapsUrl}
+          href={getOpenUrl(store)}
           target="_blank"
           rel="noopener noreferrer"
           className="absolute top-2 left-2 z-10 bg-white text-[#F7a3a9] text-xs font-bold px-3 py-1 rounded-full shadow hover:bg-pink-50 transition"
         >
           Open in Maps ↗
         </a>
-        <div className="w-full h-full min-h-[260px] bg-gradient-to-br from-pink-50 to-rose-100 flex flex-col items-center justify-center gap-3 rounded-l-xl">
-          <span className="text-5xl">🗺️</span>
-          <p className="text-sm font-bold text-[#F7a3a9]">Google Maps</p>
-          <div className="text-center px-6">
-            <p className="text-xs text-[#F7a3a9] font-bold">
-              {activeBranch.name}
-            </p>
-            <p className="text-[11px] text-[#F7a3a9] mt-1">
-              {activeBranch.address}
-            </p>
-            <p className="text-[10px] text-[#F7a3a9] mt-2">
-              {activeBranch.lat}, {activeBranch.lng}
-            </p>
+        {embedUrl ? (
+          <iframe
+            key={store.id}
+            src={embedUrl}
+            className="w-full h-full min-h-[260px] rounded-l-xl border-0"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title={store.name}
+          />
+        ) : (
+          <div className="w-full h-full min-h-[260px] bg-pink-50 flex items-center justify-center rounded-l-xl">
+            <p className="text-sm text-[#F7a3a9]">Không có thông tin địa chỉ</p>
           </div>
-          <p className="text-[10px] text-[#F7a3a9] text-center px-4">
-            Bản đồ sẽ hiển thị sau khi cấu hình API key
-          </p>
-        </div>
+        )}
       </div>
 
       {/* Branch list */}
@@ -75,11 +77,11 @@ export default function StoreMap() {
           Chọn chi nhánh
         </p>
         {BRANCHES.map((b) => {
-          const active = selected === b.id;
+          const active = selectedId === b.id;
           return (
             <button
               key={b.id}
-              onClick={() => setSelected(b.id)}
+              onClick={() => setSelectedId(b.id)}
               className={`text-left rounded-xl p-3 border transition cursor-pointer ${
                 active
                   ? "border-[#F7a3a9] bg-pink-50"

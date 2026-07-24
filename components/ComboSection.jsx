@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { combos } from "@/data/combos";
 import ComboCard from "./ComboCard";
 
 const GAP = 32; // gap-8 = 32px
@@ -19,6 +18,7 @@ const getVisibleCount = (bp) => {
 };
 
 const ComboSection = () => {
+  const [combos, setCombos] = useState([]);
   const [current, setCurrent] = useState(0);
   const [visibleCount, setVisibleCount] = useState(3);
   const [itemWidth, setItemWidth] = useState(0);
@@ -27,6 +27,64 @@ const ComboSection = () => {
   const bpRef = useRef("desktop");
 
   const total = combos.length;
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch("/api/haravan/products");
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const payload = Array.isArray(data) ? data : (data.products ?? []);
+
+        const normalizedCombos = payload
+          .filter((p) => {
+            const category = String(p.category ?? "").toLowerCase();
+            const name = String(p.name ?? p.title ?? "").toLowerCase();
+            return category === "combo" || name.includes("combo");
+          })
+          .map((item) => {
+            const title = item.title ?? item.name ?? "Combo";
+            const description =
+              item.description ??
+              (item.bodyHtml
+                ? item.bodyHtml.replace(/<[^>]+>/g, "").trim()
+                : "Combo ưu đãi hấp dẫn");
+
+            return {
+              id: item.id,
+              name: title,
+              title,
+              tag: item.tag ?? "Combo tiết kiệm",
+              category: item.category ?? "combo",
+              description,
+              price: Number(item.price ?? item.variant?.price ?? 0) || 0,
+              oldPrice:
+                Number(item.oldPrice ?? item.variant?.compare_at_price) ||
+                undefined,
+              discount:
+                item.discount ??
+                (item.variant?.compare_at_price && item.variant?.price
+                  ? Math.round(
+                      (1 - item.variant.price / item.variant.compare_at_price) *
+                        100,
+                    )
+                  : undefined),
+              image: item.image ?? item.images?.[0]?.src ?? "",
+              volume: item.volume ?? item.variant?.title ?? "",
+              available: item.available ?? true,
+              sku: item.sku ?? "",
+              bodyHtml: item.bodyHtml ?? "",
+              isNew: Boolean(item.isNew),
+            };
+          });
+
+        setCombos(normalizedCombos);
+      } catch {
+        // giữ nguyên mảng rỗng nếu lỗi
+      }
+    };
+    load();
+  }, []);
 
   const calcItemWidth = useCallback((count) => {
     if (!trackRef.current) return 0;
@@ -83,7 +141,7 @@ const ComboSection = () => {
 
   return (
     <div className="w-full bg-[#FFF1F5] py-6 px-4">
-      <section className="max-w-7xl mx-auto bg-[#FFF1F5] rounded-[40px] py-16 px-8">
+      <section className="max-w-7xl mx-auto bg-[#FFF1F5] rounded-[40px] px-8">
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-[#1F2937] uppercase leading-tight">

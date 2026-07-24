@@ -16,6 +16,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useCart } from "@/components/CartContext";
+import placeholderImage from "@/assets/images/umboMilk.jpg";
 import { FALLBACK_ADDRESS_DATA } from "@/data/addressData";
 
 const SHIPPING_OPTIONS = [
@@ -770,61 +771,69 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-3">
-                {visibleItems.map((item) => (
-                  <div
-                    key={item.product.id}
-                    className="flex gap-3 rounded-2xl border border-[#f7d0d3]/70 bg-[#fffdfd] p-3"
-                  >
-                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[#fff3f4]">
-                      <Image
-                        src={item.product.image}
-                        alt={item.product.name}
-                        fill
-                        sizes="64px"
-                        className="object-contain p-1"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-[#2d3748] line-clamp-2">
-                        {item.product.name}
-                      </p>
-                      <p className="mt-1 text-xs text-gray-500">
-                        {item.product.volume ||
-                          item.product.variant ||
-                          "Hộp tiêu chuẩn"}
-                      </p>
-                      <div className="mt-2 flex items-center justify-between">
-                        <div className="flex items-center rounded-xl border border-[#f7d0d3] overflow-hidden">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              item.qty > 1 &&
-                              updateQty(item.product.id, item.qty - 1)
-                            }
-                            className="flex h-8 w-8 items-center justify-center text-[#F7a3a9] transition hover:bg-[#fff3f4]"
-                          >
-                            <Minus size={14} />
-                          </button>
-                          <span className="min-w-7 text-center text-sm font-semibold text-[#2d3748]">
-                            {item.qty}
+                {visibleItems.map((item) => {
+                  const imageSrc =
+                    typeof item.product.image === "string" &&
+                    item.product.image.trim().length > 0
+                      ? item.product.image
+                      : placeholderImage;
+
+                  return (
+                    <div
+                      key={item.product.id}
+                      className="flex gap-3 rounded-2xl border border-[#f7d0d3]/70 bg-[#fffdfd] p-3"
+                    >
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-[#fff3f4]">
+                        <Image
+                          src={imageSrc}
+                          alt={item.product.name}
+                          fill
+                          sizes="64px"
+                          className="object-contain p-1"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-[#2d3748] line-clamp-2">
+                          {item.product.name}
+                        </p>
+                        <p className="mt-1 text-xs text-gray-500">
+                          {item.product.volume ||
+                            item.product.variant ||
+                            "Hộp tiêu chuẩn"}
+                        </p>
+                        <div className="mt-2 flex items-center justify-between">
+                          <div className="flex items-center rounded-xl border border-[#f7d0d3] overflow-hidden">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                item.qty > 1 &&
+                                updateQty(item.product.id, item.qty - 1)
+                              }
+                              className="flex h-8 w-8 items-center justify-center text-[#F7a3a9] transition hover:bg-[#fff3f4]"
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <span className="min-w-7 text-center text-sm font-semibold text-[#2d3748]">
+                              {item.qty}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateQty(item.product.id, item.qty + 1)
+                              }
+                              className="flex h-8 w-8 items-center justify-center text-[#F7a3a9] transition hover:bg-[#fff3f4]"
+                            >
+                              <Plus size={14} />
+                            </button>
+                          </div>
+                          <span className="text-sm font-semibold text-[#2d3748]">
+                            {currency(item.product.price * item.qty)}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateQty(item.product.id, item.qty + 1)
-                            }
-                            className="flex h-8 w-8 items-center justify-center text-[#F7a3a9] transition hover:bg-[#fff3f4]"
-                          >
-                            <Plus size={14} />
-                          </button>
                         </div>
-                        <span className="text-sm font-semibold text-[#2d3748]">
-                          {currency(item.product.price * item.qty)}
-                        </span>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {items.length > 1 ? (

@@ -14,6 +14,7 @@ import {
   Tag,
 } from "lucide-react";
 import { useCart } from "@/components/CartContext";
+import placeholderImage from "@/assets/images/umboMilk.jpg";
 
 const STORES = [
   "CN 1: 111 Tôn Đản, Quận 4",
@@ -42,6 +43,10 @@ const Field = ({ label, type = "text", placeholder, value, onChange }) => (
 function CartItem({ item, onRemove, onUpdate, index }) {
   const { product, qty } = item;
   const [removing, setRemoving] = useState(false);
+  const imageSrc =
+    typeof product.image === "string" && product.image.trim().length > 0
+      ? product.image
+      : placeholderImage;
 
   const handleRemove = () => {
     setRemoving(true);
@@ -64,7 +69,7 @@ function CartItem({ item, onRemove, onUpdate, index }) {
       <Link href={`/products/${product.id}`} className="flex-shrink-0">
         <div className="relative w-[80px] h-[80px] rounded-xl overflow-hidden bg-[#fff3f4]">
           <Image
-            src={product.image}
+            src={imageSrc}
             alt={product.name}
             fill
             sizes="80px"
