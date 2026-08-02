@@ -10,6 +10,7 @@ import { CartProvider } from "@/components/CartContext";
 import CartToast from "@/components/CartToast";
 import CartDrawer from "@/components/CartDrawer";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import AutumnGreetingCard from "@/components/AutumnGreetingCard";
 
 const HIDE_CHROME = ["/register"];
 
@@ -30,6 +31,7 @@ export default function ClientShell({ children }) {
           <QuickViewModal />
           <CartToast />
           <CartDrawer />
+          <AutumnGreetingCard />
         </ThemeProvider>
       </QuickViewProvider>
     </CartProvider>
