@@ -9,6 +9,7 @@ import QuickViewModal from "@/components/QuickViewModal";
 import { CartProvider } from "@/components/CartContext";
 import CartToast from "@/components/CartToast";
 import CartDrawer from "@/components/CartDrawer";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const HIDE_CHROME = ["/register"];
 
@@ -21,13 +22,15 @@ export default function ClientShell({ children }) {
   return (
     <CartProvider>
       <QuickViewProvider>
-        <Header />
-        <Content>{children}</Content>
-        <Footer />
-        <FloatingContact />
-        <QuickViewModal />
-        <CartToast />
-        <CartDrawer />
+        <ThemeProvider>
+          <Header />
+          <Content>{children}</Content>
+          <Footer />
+          <FloatingContact />
+          <QuickViewModal />
+          <CartToast />
+          <CartDrawer />
+        </ThemeProvider>
       </QuickViewProvider>
     </CartProvider>
   );

@@ -2,10 +2,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import umboMilk from "../assets/images/umboMilk.jpg";
+import umboAutumn from "../assets/images/umboAutumn.png";
 import LoginDrawer from "./LoginDrawer";
 import { useCart } from "./CartContext";
+import { useTheme } from "@/components/ThemeProvider";
+import { MidAutumnDecorations } from "@/lib/themes/mid-autumn/decorations";
 
 const ACCOUNT_STORAGE_KEY = "umbo_account_profile";
 
@@ -36,6 +39,11 @@ const Header = () => {
   const accountMenuRef = useRef(null);
   const desktopInputRef = useRef(null);
   const router = useRouter();
+  const pathname = usePathname();
+  const { theme } = useTheme();
+
+  const headerTheme = theme?.headerTheme || {};
+  const isMidAutumn = theme?.id === "trung-thu";
 
   const LIMIT = 5;
   const filtered = searchQuery.trim()
@@ -49,7 +57,7 @@ const Header = () => {
 
   useEffect(() => {
     fetch("/api/haravan/products")
-      .then((r) => r.ok ? r.json() : [])
+      .then((r) => (r.ok ? r.json() : []))
       .then((data) => setAllProducts(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, []);
@@ -175,6 +183,7 @@ const Header = () => {
       phone: profile?.phone || "",
       password: profile?.password || "",
       isVip: Boolean(profile?.isVip),
+      isOwner: Boolean(profile?.isOwner || profile?.email === "demo@umbo.vn"),
     };
     setUserProfile(safeProfile);
     setIsLoggedIn(true);
@@ -215,15 +224,19 @@ const Header = () => {
             <Link
               href={`/products/${p.id}`}
               onClick={closeDesktopSearch}
-              className="flex items-center justify-between px-4 py-3 hover:bg-[#fff0f1] transition-colors duration-200 group"
+              className={`${headerTheme.dropdownItem || "flex items-center justify-between px-4 py-3 hover:bg-[#fff0f1] transition-colors duration-200 group"}`}
             >
               <div>
-                <p className="text-sm font-medium text-gray-800">{p.name}</p>
-                <p className="text-sm text-[#F7a3a9] font-semibold mt-0.5">
+                <p className="text-sm font-medium0">{p.name}</p>
+                <p
+                  className={`${headerTheme.dropdownPrice || "text-sm text-[#F7a3a9] font-semibold mt-0.5"}`}
+                >
                   {p.price.toLocaleString("vi-VN")}đ
                 </p>
               </div>
-              <div className="ml-3 w-10 h-10 shrink-0 overflow-hidden rounded-lg bg-[#fff0f1]">
+              <div
+                className={`${headerTheme.dropdownThumb || "ml-3 w-10 h-10 shrink-0 overflow-hidden rounded-lg bg-[#fff0f1]"}`}
+              >
                 {p.image && (
                   <Image
                     src={p.image}
@@ -244,7 +257,8 @@ const Header = () => {
         <Link
           href={`/products?q=${encodeURIComponent(searchQuery)}`}
           onClick={closeDesktopSearch}
-          className="block w-full text-center text-sm text-[#F7a3a9] hover:text-[#e07a82] py-3 font-medium transition-colors duration-200"
+          className="block w-full text-center text-sm py-3 font-medium transition-colors duration-200"
+          style={{ color: theme?.values?.primary || "#F7A3A9" }}
         >
           Xem thêm {extra} sản phẩm
         </Link>
@@ -255,29 +269,63 @@ const Header = () => {
   return (
     <header
       ref={headerRef}
-      className={`bg-white sticky top-0 z-30 transition-all duration-300 ${scrolled ? "shadow-md" : "shadow-sm"}`}
+      className={`${headerTheme.container || "bg-white sticky top-0 z-30 transition-all duration-300"} ${scrolled ? "shadow-md" : "shadow-sm"}`}
+      style={{
+        fontFamily: theme?.values?.fontFamily || "var(--font-koni), sans-serif",
+      }}
     >
+      {isMidAutumn ? <MidAutumnDecorations className="opacity-70" /> : null}
+      {isMidAutumn ? (
+        <div
+          className={
+            headerTheme.accentLine ||
+            "absolute inset-x-4 top-full h-px bg-linear-to-r from-transparent via-[#e7c08d] to-transparent"
+          }
+        />
+      ) : null}
       {/* ── Header row ── */}
-      <div className="flex items-center justify-between px-4">
+      <div
+        className={`${headerTheme.inner || "flex items-center justify-between px-4"}`}
+      >
         {/* Logo */}
-        <Link href="/" className="flex items-center" aria-label="Um Bo Milk">
-          <Image src={umboMilk} alt="Um Bo Milk" width={70} height={70} />
+        <Link
+          href="/"
+          className={`${headerTheme.logoWrap || "flex items-center"} relative`}
+          aria-label="Um Bo Milk"
+        >
+          {isMidAutumn ? (
+            <span
+              className={
+                headerTheme.moon ||
+                "absolute -top-2 -right-2 h-4 w-4 rounded-full bg-[#f8e8a8] shadow-[0_0_16px_rgba(248,232,168,0.8)]"
+              }
+            />
+          ) : null}
+          <Image
+            src={isMidAutumn ? umboAutumn : umboMilk}
+            alt="Um Bo Milk"
+            width={70}
+            height={70}
+          />
         </Link>
 
         {/* Nav — desktop lg+, ẩn khi search mở */}
         <nav
-          className="hidden lg:flex gap-6 transition-opacity duration-300"
+          className={`${headerTheme.nav || "hidden lg:flex gap-6 transition-opacity duration-300"}`}
           style={searchOpen ? { opacity: 0, pointerEvents: "none" } : {}}
         >
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm text-[#F7a3a9] hover:text-[#00000052]"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const active = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`${headerTheme.navLink || "text-sm text-[#F7a3a9] hover:text-[#00000052] transition-colors duration-200"} ${active ? headerTheme.navLinkActive || "font-semibold" : ""}`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Icons */}
@@ -287,7 +335,7 @@ const Header = () => {
             <button
               aria-label="Tìm kiếm"
               onClick={() => setSearchOpen(true)}
-              className="flex items-center justify-center rounded-full p-2 text-[#F7a3a9] hover:text-[#00000052] transition-opacity duration-300"
+              className={`${headerTheme.iconButton || "flex items-center justify-center rounded-full p-2 text-[#F7a3a9] hover:text-[#00000052] transition-opacity duration-300"}`}
               style={
                 searchOpen
                   ? { opacity: 0, pointerEvents: "none", visibility: "hidden" }
@@ -316,7 +364,7 @@ const Header = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Tìm kiếm sản phẩm..."
-                  className="w-full pl-9 pr-4 py-2 text-sm border border-[#F7a3a9] rounded-full outline-none focus:ring-2 focus:ring-[#F7a3a9]/40 text-gray-700 placeholder-gray-400"
+                  className={`${headerTheme.searchInput || "w-full pl-9 pr-4 py-2 text-sm border border-[#F7a3a9] rounded-full outline-none focus:ring-2 focus:ring-[#F7a3a9]/40 text-gray-700 placeholder-gray-400 bg-white"}`}
                 />
               </div>
 
@@ -330,7 +378,7 @@ const Header = () => {
                     "opacity 280ms ease-out, transform 280ms ease-out",
                   pointerEvents: dropdownOpen ? "auto" : "none",
                 }}
-                className="absolute top-full right-0 mt-2 w-full bg-white rounded-2xl shadow-lg overflow-hidden z-50"
+                className={`${headerTheme.searchDropdown || "absolute top-full right-0 mt-2 w-full bg-white rounded-2xl shadow-lg overflow-hidden z-50"}`}
               >
                 <SearchDropdown maxHeight="400px" />
               </div>
@@ -341,7 +389,7 @@ const Header = () => {
           <button
             aria-label="Giỏ hàng"
             onClick={() => setDrawerOpen(true)}
-            className="relative flex items-center justify-center rounded-full p-2 text-[#F7a3a9] hover:text-[#00000052]"
+            className={`${headerTheme.iconButton || "relative flex items-center justify-center rounded-full p-2 text-[#F7a3a9] hover:text-[#00000052]"} relative`}
           >
             <span className="box-icon flex items-center justify-center">
               <svg
@@ -357,7 +405,7 @@ const Header = () => {
             </span>
             <span
               key={totalCount}
-              className="absolute -top-1 -right-1 flex h-5 w-5 lg:h-6 lg:w-6 items-center justify-center rounded-full bg-[#F7a3a9] text-[10px] lg:text-[11px] font-semibold text-white"
+              className={`absolute -top-1 -right-1 flex h-5 w-5 lg:h-6 lg:w-6 items-center justify-center rounded-full ${headerTheme.badge || "bg-[#F7a3a9] text-white"} text-[10px] lg:text-[11px] font-semibold`}
               style={{
                 animation: "badgePop 300ms cubic-bezier(0.34,1.56,0.64,1) both",
               }}
@@ -372,11 +420,22 @@ const Header = () => {
               ref={loginBtnRef}
               aria-label={isLoggedIn ? "Tài khoản" : "Đăng nhập"}
               onClick={handleAccountToggle}
-              className="relative flex items-center justify-center h-10 w-10 rounded-full text-[#F7a3a9] hover:text-[#00000052]"
+              className={`${headerTheme.iconButton || "relative flex items-center justify-center h-10 w-10 rounded-full text-[#F7a3a9] hover:text-[#00000052]"} h-10 w-10 rounded-full relative`}
             >
               {isLoggedIn ? (
                 <>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-bold text-[#F7a3a9] shadow-sm">
+                  <div
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold shadow-sm"
+                    style={{
+                      backgroundColor: isMidAutumn
+                        ? "rgba(255,228,160,0.15)"
+                        : "white",
+                      color: isMidAutumn ? "#FFE4A0" : "#F7a3a9",
+                      border: isMidAutumn
+                        ? "1px solid rgba(255,228,160,0.3)"
+                        : "none",
+                    }}
+                  >
                     {userProfile?.name?.charAt(0)?.toUpperCase() || "U"}
                   </div>
                   {userProfile?.isVip ? (
@@ -411,56 +470,138 @@ const Header = () => {
               >
                 {isMobile ? (
                   <div
-                    className="fixed inset-0 bg-black/40"
+                    className="fixed inset-0 bg-black/50"
                     onClick={() => setAccountMenuOpen(false)}
                   />
                 ) : null}
                 <div
-                  className={`${isMobile ? "fixed right-0 top-0 h-full w-[85vw] max-w-sm bg-white shadow-2xl" : "rounded-3xl border border-[#f7d0d3] bg-white p-4 shadow-[0_20px_45px_rgba(247,163,169,0.16)]"}`}
+                  className={`${
+                    isMobile
+                      ? "fixed right-0 top-0 h-full w-[85vw] max-w-sm shadow-2xl"
+                      : headerTheme.accountPanel ||
+                        "rounded-3xl border border-[#f7d0d3] bg-white p-4 shadow-[0_20px_45px_rgba(247,163,169,0.16)]"
+                  }`}
+                  style={
+                    isMobile
+                      ? {
+                          backgroundColor:
+                            theme?.values?.cardBackground || "#FFFFFF",
+                        }
+                      : {}
+                  }
                 >
+                  {/* ── Mobile header bar ── */}
                   {isMobile ? (
-                    <div className="flex items-center justify-between border-b border-[#f7d0d3] px-4 py-4">
-                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#F7a3a9]">
+                    <div
+                      className="flex items-center justify-between px-4 py-4"
+                      style={{
+                        borderBottom: isMidAutumn
+                          ? "1px solid rgba(255,228,160,0.2)"
+                          : "1px solid #f7d0d3",
+                      }}
+                    >
+                      <p
+                        className="text-sm font-semibold uppercase tracking-[0.2em]"
+                        style={{
+                          color: isMidAutumn
+                            ? "#E8B547"
+                            : theme?.values?.primary || "#F7A3A9",
+                        }}
+                      >
                         Tài khoản
                       </p>
                       <button
                         onClick={() => setAccountMenuOpen(false)}
-                        className="text-gray-500"
+                        style={{ color: isMidAutumn ? "#FFF6E5" : "#6b7280" }}
                       >
                         ✕
                       </button>
                     </div>
                   ) : null}
+
                   <div className={`${isMobile ? "px-4 py-4" : ""}`}>
-                    <div className="mb-4 rounded-2xl bg-[#fff3f4] p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#F7a3a9]">
+                    {/* ── Card thông tin tài khoản ── */}
+                    <div
+                      className="mb-4 rounded-2xl p-3"
+                      style={{
+                        backgroundColor: isMidAutumn
+                          ? "rgba(255,228,160,0.08)"
+                          : "#fff3f4",
+                        border: isMidAutumn
+                          ? "1px solid rgba(255,228,160,0.15)"
+                          : "none",
+                      }}
+                    >
+                      <p
+                        className="text-[11px] font-semibold uppercase tracking-[0.28em]"
+                        style={{
+                          color: isMidAutumn
+                            ? "#E8B547"
+                            : theme?.values?.primary || "#F7A3A9",
+                        }}
+                      >
                         THÔNG TIN TÀI KHOẢN
                       </p>
-                      <p className="mt-2 text-sm font-semibold text-[#2d3748]">
+                      <p
+                        className="mt-2 text-sm font-semibold"
+                        style={{ color: isMidAutumn ? "#FFF6E5" : "#2d3748" }}
+                      >
                         {userProfile?.name || "Khách hàng Umbo"}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p
+                        className="text-xs"
+                        style={{ color: isMidAutumn ? "#FFDDC0" : "#6b7280" }}
+                      >
                         {userProfile?.email || "Chưa có email"}
                       </p>
                     </div>
-                    <div className="flex flex-col gap-1.5">
+
+                    {/* ── Menu links ── */}
+                    <div className="flex flex-col gap-1">
                       <Link
                         href="/account"
                         onClick={() => setAccountMenuOpen(false)}
-                        className="rounded-2xl px-3 py-2.5 text-sm font-medium text-[#2d3748] transition hover:bg-[#fff3f4] hover:text-[#F7a3a9]"
+                        className="group rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors duration-150"
+                        style={{ color: isMidAutumn ? "#FFF6E5" : "#2d3748" }}
+                        onMouseEnter={(e) => {
+                          if (isMidAutumn)
+                            e.currentTarget.style.color = "#F9D897";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (isMidAutumn)
+                            e.currentTarget.style.color = "#FFF6E5";
+                        }}
                       >
                         Tài khoản của tôi
                       </Link>
                       <Link
                         href="/addresses"
                         onClick={() => setAccountMenuOpen(false)}
-                        className="rounded-2xl px-3 py-2.5 text-sm font-medium text-[#2d3748] transition hover:bg-[#fff3f4] hover:text-[#F7a3a9]"
+                        className="group rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors duration-150"
+                        style={{ color: isMidAutumn ? "#FFF6E5" : "#2d3748" }}
+                        onMouseEnter={(e) => {
+                          if (isMidAutumn)
+                            e.currentTarget.style.color = "#F9D897";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (isMidAutumn)
+                            e.currentTarget.style.color = "#FFF6E5";
+                        }}
                       >
                         Danh sách địa chỉ
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-red-500 transition hover:bg-red-50"
+                        className="rounded-2xl px-3 py-2.5 text-left text-sm font-medium transition-colors duration-150"
+                        style={{ color: isMidAutumn ? "#FF6B6B" : "#ef4444" }}
+                        onMouseEnter={(e) => {
+                          if (isMidAutumn)
+                            e.currentTarget.style.color = "#FF4F4F";
+                        }}
+                        onMouseLeave={(e) => {
+                          if (isMidAutumn)
+                            e.currentTarget.style.color = "#FF6B6B";
+                        }}
                       >
                         Đăng xuất
                       </button>
@@ -474,17 +615,20 @@ const Header = () => {
           {/* Hamburger — chỉ hiện dưới lg */}
           <button
             aria-label="Menu"
-            className="lg:hidden flex flex-col gap-1.5"
+            className={`lg:hidden flex flex-col gap-1.5 rounded-full p-2 ${isMidAutumn ? "border border-[#e0a85e]/40 bg-white/70" : ""}`}
             onClick={() => setMenuOpen(!menuOpen)}
           >
             <span
-              className={`block w-6 h-0.5 bg-[#F7a3a9] transition-transform ${menuOpen ? "rotate-45 translate-y-2" : ""}`}
+              className={`block w-6 h-0.5 transition-transform ${menuOpen ? "rotate-45 translate-y-2" : ""}`}
+              style={{ backgroundColor: theme?.values?.primary || "#F7A3A9" }}
             />
             <span
-              className={`block w-6 h-0.5 bg-[#F7a3a9] transition-opacity ${menuOpen ? "opacity-0" : ""}`}
+              className={`block w-6 h-0.5 transition-opacity ${menuOpen ? "opacity-0" : ""}`}
+              style={{ backgroundColor: theme?.values?.primary || "#F7A3A9" }}
             />
             <span
-              className={`block w-6 h-0.5 bg-[#F7a3a9] transition-transform ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`}
+              className={`block w-6 h-0.5 transition-transform ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`}
+              style={{ backgroundColor: theme?.values?.primary || "#F7A3A9" }}
             />
           </button>
         </div>
@@ -493,18 +637,23 @@ const Header = () => {
       {/* ── Search bar cố định mobile/tablet — luôn hiện, ẩn từ lg+ ── */}
       <div className="lg:hidden px-3 pb-2 pt-1">
         <div className="relative flex items-center">
-          <SearchSVG className="absolute left-3 w-4 h-4 text-[#F7a3a9] pointer-events-none z-10" />
+          <SearchSVG
+            className="absolute left-3 w-4 h-4 pointer-events-none z-10"
+            style={{ color: theme?.values?.primary || "#F7A3A9" }}
+          />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm kiếm sản phẩm..."
-            className="w-full pl-9 pr-4 py-2 text-sm border border-[#F7a3a9] rounded-full outline-none focus:ring-2 focus:ring-[#F7a3a9]/40 text-gray-700 placeholder-gray-400"
+            className={`${headerTheme.searchInput || "w-full pl-9 pr-4 py-2 text-sm border border-[#F7a3a9] rounded-full outline-none focus:ring-2 focus:ring-[#F7a3a9]/40 text-gray-700 placeholder-gray-400 bg-white"}`}
           />
         </div>
 
         {dropdownOpen && (
-          <div className="mt-2 w-full bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div
+            className={`${headerTheme.searchDropdown || "mt-2 w-full bg-white rounded-2xl shadow-lg overflow-hidden"}`}
+          >
             <SearchDropdown maxHeight="280px" />
           </div>
         )}
@@ -525,10 +674,11 @@ const Header = () => {
       )}
 
       <nav
-        className={`fixed top-0 right-0 h-full w-72 bg-white z-50 flex flex-col px-6 py-8 gap-6 shadow-xl transition-transform duration-300 lg:hidden ${menuOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`${headerTheme.mobileMenu || "fixed top-0 right-0 h-full w-72 bg-white z-50 flex flex-col px-6 py-8 gap-6 shadow-xl transition-transform duration-300 lg:hidden"} ${menuOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         <button
-          className="self-end text-[#F7a3a9]"
+          className="self-end"
+          style={{ color: theme?.values?.primary || "#F7A3A9" }}
           onClick={() => setMenuOpen(false)}
           aria-label="Đóng menu"
         >
@@ -538,7 +688,7 @@ const Header = () => {
           <Link
             key={link.href}
             href={link.href}
-            className="text-sm text-[#F7a3a9] hover:text-[#00000052] transition-colors"
+            className={`${headerTheme.mobileMenuLink || "text-sm text-[#F7a3a9] hover:text-[#00000052] transition-colors"}`}
             onClick={() => setMenuOpen(false)}
           >
             {link.label}

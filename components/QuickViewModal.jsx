@@ -6,10 +6,48 @@ import { X, ArrowRight, ShoppingCart, Plus, Minus } from "lucide-react";
 import placeholderImage from "@/assets/images/umboMilk.jpg";
 import { useQuickView } from "./QuickViewContext";
 import { useCart } from "./CartContext";
+import { useTheme } from "@/components/ThemeProvider";
+
+const defaultTokens = {
+  overlayBg: "rgba(0,0,0,0.5)",
+  modalBg: "white",
+  modalBorder: "none",
+  closeBtnBg: "#f3f4f6",
+  closeBtnColor: "#6b7280",
+  closeBtnHoverBg: "#F7a3a9",
+  closeBtnHoverColor: "white",
+  imgBg: "white",
+  imgThumbBg: "#f9fafb",
+  imgThumbActiveBorder: "#F7a3a9",
+  imgThumbInactiveBorder: "transparent",
+  titleColor: "#F7a3a9",
+  labelColor: "#2d3748",
+  valueColor: "#6b7280",
+  stockColor: "#22c55e",
+  priceColor: "#F7a3a9",
+  oldPriceColor: "#9ca3af",
+  discountBadge: { bg: "#ef4444", text: "white" },
+  newBadge: { bg: "#facc15", text: "white" },
+  qtyBorder: "2px solid #f7d0d3",
+  qtyBtnBg: "#fff3f4",
+  qtyBtnColor: "#F7a3a9",
+  qtyBtnHoverBg: "#F7a3a9",
+  qtyBtnHoverColor: "white",
+  qtyNumColor: "#2d3748",
+  addBtnBg: "#F7a3a9",
+  addBtnHoverBg: "#f08a91",
+  addBtnShadow: "0 4px 14px rgba(247,163,169,0.35)",
+  addBtnHoverShadow: "0 6px 20px rgba(247,163,169,0.45)",
+  detailColor: "#F7a3a9",
+  detailHoverColor: "#f08a91",
+};
 
 export default function QuickViewModal() {
   const { product, close } = useQuickView();
   const { addToCart } = useCart();
+  const { theme } = useTheme();
+  const t = theme?.sectionTheme?.quickViewModal ?? defaultTokens;
+
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
   const [visible, setVisible] = useState(false);
@@ -20,9 +58,7 @@ export default function QuickViewModal() {
       setQty(1);
       setActiveImg(0);
       requestAnimationFrame(() => setVisible(true));
-    } else {
-      setVisible(false);
-    }
+    } else setVisible(false);
   }, [product]);
 
   useEffect(() => {
@@ -42,7 +78,6 @@ export default function QuickViewModal() {
     setVisible(false);
     setTimeout(close, 280);
   }
-
   function handleOverlayClick(e) {
     if (e.target === overlayRef.current) handleClose();
   }
@@ -63,12 +98,14 @@ export default function QuickViewModal() {
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 transition-opacity duration-[280ms]"
-      style={{ opacity: visible ? 1 : 0 }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-opacity duration-[280ms]"
+      style={{ background: t.overlayBg, opacity: visible ? 1 : 0 }}
     >
       <div
-        className="relative bg-white rounded-[20px] shadow-2xl w-full max-w-[960px] max-h-[90vh] overflow-y-auto transition-[transform,opacity] duration-[280ms]"
+        className="relative rounded-[20px] shadow-2xl w-full max-w-[960px] max-h-[90vh] overflow-y-auto transition-[transform,opacity] duration-[280ms]"
         style={{
+          background: t.modalBg,
+          border: t.modalBorder,
           transform: visible ? "scale(1)" : "scale(0.95)",
           opacity: visible ? 1 : 0,
         }}
@@ -80,16 +117,27 @@ export default function QuickViewModal() {
         <button
           onClick={handleClose}
           aria-label="Đóng"
-          className="absolute top-3.5 right-3.5 z-10 w-[34px] h-[34px] rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-[#F7a3a9] hover:text-white transition-colors duration-200 cursor-pointer"
+          className="absolute top-3.5 right-3.5 z-10 w-[34px] h-[34px] rounded-full flex items-center justify-center transition-colors duration-200 cursor-pointer"
+          style={{ background: t.closeBtnBg, color: t.closeBtnColor }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = t.closeBtnHoverBg;
+            e.currentTarget.style.color = t.closeBtnHoverColor;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = t.closeBtnBg;
+            e.currentTarget.style.color = t.closeBtnColor;
+          }}
         >
           <X size={18} />
         </button>
 
-        {/* Body 2 cột */}
-        <div className="grid grid-cols-[55%_45%]  p-[25px]">
+        <div className="grid grid-cols-[55%_45%] p-[25px]">
           {/* ── Cột trái: ảnh ── */}
-          <div className="flex flex-col gap-3 animate-[fadeRight_300ms_ease_both]">
-            <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-white">
+          <div className="flex flex-col gap-3 animate-[fadeRight_300ms_ease_both] pr-[15px]">
+            <div
+              className="relative w-full aspect-square rounded-2xl overflow-hidden"
+              style={{ background: t.imgBg }}
+            >
               <Image
                 src={images[activeImg]}
                 alt={name}
@@ -98,7 +146,6 @@ export default function QuickViewModal() {
                 className="object-contain transition-transform duration-300 hover:scale-[1.03]"
               />
             </div>
-
             {images.length > 1 && (
               <div className="flex gap-2 flex-wrap">
                 {images.map((img, i) => (
@@ -106,11 +153,14 @@ export default function QuickViewModal() {
                     key={i}
                     onClick={() => setActiveImg(i)}
                     aria-label={`Ảnh ${i + 1}`}
-                    className={`relative w-[60px] h-[60px] rounded-xl overflow-hidden bg-gray-50 flex-shrink-0 border-2 transition-colors duration-200 cursor-pointer ${
-                      i === activeImg
-                        ? "border-[#F7a3a9]"
-                        : "border-transparent hover:border-[#F7a3a9]"
-                    }`}
+                    className="relative w-[60px] h-[60px] rounded-xl overflow-hidden flex-shrink-0 border-2 transition-colors duration-200 cursor-pointer"
+                    style={{
+                      background: t.imgThumbBg,
+                      borderColor:
+                        i === activeImg
+                          ? t.imgThumbActiveBorder
+                          : t.imgThumbInactiveBorder,
+                    }}
                   >
                     <Image
                       src={img}
@@ -127,17 +177,22 @@ export default function QuickViewModal() {
 
           {/* ── Cột phải: thông tin ── */}
           <div className="flex flex-col gap-4 animate-[fadeLeft_300ms_ease_both]">
-            {/* 1. Tên */}
-            <h2 className="text-xl font-bold text-[#F7a3a9] leading-snug">
+            <h2
+              className="text-xl font-bold leading-snug"
+              style={{ color: t.titleColor }}
+            >
               {name}
             </h2>
 
-            {/* 2. Thông tin nhanh */}
             <div className="flex flex-col gap-1.5">
               {[
                 [
                   "Tình trạng",
-                  <span key="stock" className="text-green-500 font-semibold">
+                  <span
+                    key="s"
+                    className="font-semibold"
+                    style={{ color: t.stockColor }}
+                  >
                     Còn hàng
                   </span>,
                 ],
@@ -148,74 +203,128 @@ export default function QuickViewModal() {
                 .filter(Boolean)
                 .map(([label, value]) => (
                   <div key={label} className="flex gap-1.5 text-xs">
-                    <span className="font-semibold text-[#2d3748] whitespace-nowrap">
+                    <span
+                      className="font-semibold whitespace-nowrap"
+                      style={{ color: t.labelColor }}
+                    >
                       {label}:
                     </span>
-                    <span className="text-gray-500">{value}</span>
+                    <span style={{ color: t.valueColor }}>{value}</span>
                   </div>
                 ))}
             </div>
 
-            {/* 3. Giá */}
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="text-2xl font-bold text-[#F7a3a9]">
+              <span
+                className="text-2xl font-bold"
+                style={{ color: t.priceColor }}
+              >
                 {price.toLocaleString("vi-VN")}đ
               </span>
               {oldPrice && (
-                <span className="text-sm text-gray-400 line-through">
+                <span
+                  className="text-sm line-through"
+                  style={{ color: t.oldPriceColor }}
+                >
                   {oldPrice.toLocaleString("vi-VN")}đ
                 </span>
               )}
               {discount && (
-                <span className="text-xs font-bold bg-red-500 text-white px-2 py-0.5 rounded-full">
+                <span
+                  className="text-xs font-bold px-2 py-0.5 rounded-full"
+                  style={{
+                    background: t.discountBadge.bg,
+                    color: t.discountBadge.text,
+                  }}
+                >
                   -{discount}%
                 </span>
               )}
               {isNew && !discount && (
-                <span className="text-xs font-bold bg-yellow-400 text-white px-2 py-0.5 rounded-full">
+                <span
+                  className="text-xs font-bold px-2 py-0.5 rounded-full"
+                  style={{ background: t.newBadge.bg, color: t.newBadge.text }}
+                >
                   MỚI
                 </span>
               )}
             </div>
 
-            {/* 4. Số lượng */}
-            <div className="flex items-center w-fit border-2 border-[#f7d0d3] rounded-xl overflow-hidden">
+            <div
+              className="flex items-center w-fit rounded-xl overflow-hidden"
+              style={{ border: t.qtyBorder }}
+            >
               <button
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 aria-label="Giảm"
-                className="w-[38px] h-[38px] flex items-center justify-center bg-[#fff3f4] text-[#F7a3a9] hover:bg-[#F7a3a9] hover:text-white transition-colors duration-200 cursor-pointer"
+                className="w-[38px] h-[38px] flex items-center justify-center transition-colors duration-200 cursor-pointer"
+                style={{ background: t.qtyBtnBg, color: t.qtyBtnColor }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = t.qtyBtnHoverBg;
+                  e.currentTarget.style.color = t.qtyBtnHoverColor;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = t.qtyBtnBg;
+                  e.currentTarget.style.color = t.qtyBtnColor;
+                }}
               >
                 <Minus size={14} />
               </button>
-              <span className="min-w-[44px] text-center text-sm font-bold text-[#2d3748] select-none">
+              <span
+                className="min-w-[44px] text-center text-sm font-bold select-none"
+                style={{ color: t.qtyNumColor }}
+              >
                 {qty}
               </span>
               <button
                 onClick={() => setQty((q) => q + 1)}
                 aria-label="Tăng"
-                className="w-[38px] h-[38px] flex items-center justify-center bg-[#fff3f4] text-[#F7a3a9] hover:bg-[#F7a3a9] hover:text-white transition-colors duration-200 cursor-pointer"
+                className="w-[38px] h-[38px] flex items-center justify-center transition-colors duration-200 cursor-pointer"
+                style={{ background: t.qtyBtnBg, color: t.qtyBtnColor }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = t.qtyBtnHoverBg;
+                  e.currentTarget.style.color = t.qtyBtnHoverColor;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = t.qtyBtnBg;
+                  e.currentTarget.style.color = t.qtyBtnColor;
+                }}
               >
                 <Plus size={14} />
               </button>
             </div>
 
-            {/* 5. Thêm vào giỏ */}
             <button
               onClick={() => {
                 addToCart(product, qty);
                 handleClose();
               }}
-              className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#F7a3a9] text-white text-sm font-bold rounded-xl shadow-[0_4px_14px_rgba(247,163,169,0.35)] hover:bg-[#f08a91] hover:scale-[1.02] hover:shadow-[0_6px_20px_rgba(247,163,169,0.45)] transition-all duration-200 cursor-pointer"
+              className="flex items-center justify-center gap-2 w-full py-3.5 text-white text-sm font-bold rounded-xl transition-all duration-200 cursor-pointer hover:scale-[1.02]"
+              style={{ background: t.addBtnBg, boxShadow: t.addBtnShadow }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = t.addBtnHoverBg;
+                e.currentTarget.style.boxShadow = t.addBtnHoverShadow;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = t.addBtnBg;
+                e.currentTarget.style.boxShadow = t.addBtnShadow;
+              }}
             >
               <ShoppingCart size={18} />
               Thêm vào giỏ
             </button>
 
-            {/* 6. Xem chi tiết */}
             <Link
               href={`/products/${product.id}`}
               onClick={handleClose}
-              className="flex items-center justify-center gap-1.5 text-xs font-semibold text-[#F7a3a9] hover:text-[#f08a91] hover:underline transition-colors duration-200"
+              className="flex items-center justify-center gap-1.5 text-xs font-semibold transition-colors duration-200"
+              style={{ color: t.detailColor }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = t.detailHoverColor;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = t.detailColor;
+              }}
             >
               Xem chi tiết sản phẩm
               <ArrowRight size={14} />

@@ -1,13 +1,44 @@
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
 import ProductCard from "@/components/ProductCard";
+import { useTheme } from "@/components/ThemeProvider";
+import { products as staticProducts } from "@/data/products";
+
+const defaultTokens = {
+  bg: "#fff3f4",
+  headingColor: "#2d3748",
+  dividerColor: "#F7a3a9",
+  sidebarBg: "white",
+  sidebarBorder: "none",
+  accordionBorderColor: "#f7d0d3",
+  accordionTitleColor: "#2d3748",
+  accordionTitleHoverColor: "#F7a3a9",
+  accordionIconColor: "#F7a3a9",
+  checkboxLabelColor: "#4b5563",
+  checkboxLabelHoverColor: "#F7a3a9",
+  emptyTextColor: "#6b7280",
+  resetBtnBg: "#F7a3a9",
+  resetBtnText: "white",
+  resetBtnHoverBg: "#f08a91",
+  loadMoreColor: "#F7a3a9",
+  loadMoreBorder: "#F7a3a9",
+  loadMoreHoverBg: "#F7a3a9",
+  loadMoreHoverText: "white",
+  allSeenColor: "#9ca3af",
+};
 
 const CATEGORIES = [
-  { label: "Sữa", values: ["sua"] },
-  { label: "Váng sữa", values: ["vang-sua"] },
-  { label: "Combo", values: ["combo"] },
-  { label: "Đồ ăn vặt/Bánh kẹo", values: ["do-an-vat"] },
-  { label: "Sản phẩm khác", values: ["khac", "phu-kien"] },
+  { label: "Sữa", values: ["sua", "Sữa"] },
+  { label: "Váng sữa", values: ["vang-sua", "Váng sữa"] },
+  { label: "Combo", values: ["combo", "Combo"] },
+  { label: "Đồ ăn vặt/Bánh kẹo", values: ["do-an-vat", "Đồ ăn vặt/Bánh kẹo"] },
+  { label: "Sản phẩm khác", values: ["khac", "phu-kien", "Sản phẩm khác"] },
+];
+
+const CATEGORIES_TRUNG_THU = [
+  { label: "Hộp Quà Biếu Cao Cấp", values: ["Hộp Quà Biếu"] },
+  { label: "Bánh Truyền Thống", values: ["Bánh & Combo"] },
+  { label: "Đồ Chơi & Đèn Lồng", values: ["Đèn Lồng & Đồ Chơi"] },
 ];
 
 const STORES = [
@@ -18,39 +49,50 @@ const STORES = [
 ];
 
 const PAGE_SIZE = 8;
+const DEFAULT_CATEGORIES = ["sua", "vang-sua", "do-an-vat", "Sữa", "Váng sữa"];
 
-const DEFAULT_CATEGORIES = ["sua", "vang-sua", "do-an-vat"];
-
-function filterProducts(products, selectedCategoryKeys, stores) {
-  const slugs =
+function filterProducts(products, selectedCategoryKeys, stores, allCategories) {
+  const allValues =
     selectedCategoryKeys.length > 0
       ? selectedCategoryKeys.flatMap(
-          (key) => CATEGORIES.find((c) => c.label === key)?.values ?? [key],
+          (key) => allCategories.find((c) => c.label === key)?.values ?? [key],
         )
       : DEFAULT_CATEGORIES;
+
   return products.filter((p) => {
-    const categoryMatch = slugs.includes(p.category);
+    const categoryMatch = allValues.includes(p.category);
     const storeMatch =
       stores.length === 0 || p.stores?.some((s) => stores.includes(s));
     return categoryMatch && storeMatch;
   });
 }
 
-function AccordionGroup({ title, items, checked, onChange }) {
+function AccordionGroup({ title, items, checked, onChange, t }) {
   const [open, setOpen] = useState(false);
-
   return (
-    <div className="border-b border-[#f7d0d3] last:border-b-0">
+    <div
+      className="border-b last:border-b-0"
+      style={{ borderColor: t.accordionBorderColor }}
+    >
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between py-3 px-1 text-left text-sm font-bold text-[#2d3748] hover:text-[#F7a3a9] transition-colors"
+        className="w-full flex items-center justify-between py-3 px-1 text-left text-sm font-bold transition-colors"
+        style={{ color: t.accordionTitleColor }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = t.accordionTitleHoverColor;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = t.accordionTitleColor;
+        }}
       >
         <span>{title}</span>
-        <span className="text-[#F7a3a9] text-xl leading-none select-none w-5 text-center">
+        <span
+          className="text-xl leading-none select-none w-5 text-center"
+          style={{ color: t.accordionIconColor }}
+        >
           {open ? "−" : "+"}
         </span>
       </button>
-
       <div
         style={{
           display: "grid",
@@ -65,14 +107,24 @@ function AccordionGroup({ title, items, checked, onChange }) {
               const label = typeof item === "object" ? item.label : item;
               return (
                 <li key={key}>
-                  <label className="flex items-centers gap-2 cursor-pointer group">
+                  <label className="flex items-center gap-2 cursor-pointer group">
                     <input
                       type="checkbox"
                       checked={checked.includes(key)}
                       onChange={() => onChange(key)}
-                      className="mt-0.5 w-4 h-4 accent-[#F7a3a9] cursor-pointer flex-shrink-0"
+                      className="mt-0.5 w-4 h-4 cursor-pointer flex-shrink-0"
+                      style={{ accentColor: t.accordionIconColor }}
                     />
-                    <span className="text-xs pt-[6px] text-gray-600 group-hover:text-[#F7a3a9] transition-colors leading-none">
+                    <span
+                      className="text-xs pt-[6px] transition-colors leading-none"
+                      style={{ color: t.checkboxLabelColor }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = t.checkboxLabelHoverColor;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = t.checkboxLabelColor;
+                      }}
+                    >
                       {label}
                     </span>
                   </label>
@@ -87,13 +139,16 @@ function AccordionGroup({ title, items, checked, onChange }) {
 }
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState([]);
+  const [apiProducts, setApiProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedStores, setSelectedStores] = useState([]);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const newStartRef = useRef(0);
+  const { theme } = useTheme();
+  const isMidAutumn = theme?.id === "trung-thu";
+  const t = theme?.sectionTheme?.productsPage ?? defaultTokens;
 
   useEffect(() => {
     const load = async () => {
@@ -101,7 +156,7 @@ export default function ProductsPage() {
         const res = await fetch("/api/haravan/products");
         if (!res.ok) throw new Error(`Lỗi ${res.status}`);
         const data = await res.json();
-        setProducts(Array.isArray(data) ? data : []);
+        setApiProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -110,6 +165,24 @@ export default function ProductsPage() {
     };
     load();
   }, []);
+
+  // Merge data tĩnh Trung Thu khi isMidAutumn
+  const products = useMemo(() => {
+    if (!isMidAutumn) return apiProducts;
+    const trungThuCategories = [
+      "Hộp Quà Biếu",
+      "Bánh & Combo",
+      "Đèn Lồng & Đồ Chơi",
+    ];
+    const trungThuStatic = staticProducts.filter((p) =>
+      trungThuCategories.includes(p.category),
+    );
+    return [...apiProducts, ...trungThuStatic];
+  }, [apiProducts, isMidAutumn]);
+
+  const allCategories = isMidAutumn
+    ? [...CATEGORIES, ...CATEGORIES_TRUNG_THU]
+    : CATEGORIES;
 
   const toggle = (setter) => (item) => {
     setter((prev) =>
@@ -123,8 +196,14 @@ export default function ProductsPage() {
   };
 
   const filteredProducts = useMemo(
-    () => filterProducts(products, selectedCategories, selectedStores),
-    [products, selectedCategories, selectedStores],
+    () =>
+      filterProducts(
+        products,
+        selectedCategories,
+        selectedStores,
+        allCategories,
+      ),
+    [products, selectedCategories, selectedStores, isMidAutumn],
   );
 
   useEffect(() => {
@@ -143,19 +222,28 @@ export default function ProductsPage() {
   };
 
   return (
-    <main className="flex-1 bg-[#fff3f4] min-h-screen">
+    <main className="flex-1 min-h-screen" style={{ background: t.bg }}>
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-[#2d3748]">
+          <h1
+            className="text-xl sm:text-2xl font-bold"
+            style={{ color: t.headingColor }}
+          >
             DANH MỤC SẢN PHẨM
           </h1>
-          <div className="mt-2 h-1 w-16 bg-[#F7a3a9] rounded-full" />
+          <div
+            className="mt-2 h-1 w-16 rounded-full"
+            style={{ background: t.dividerColor }}
+          />
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* ── Sidebar ── */}
-          <aside className="w-full lg:w-[280px] lg:flex-shrink-0">
-            <div className="bg-white rounded-2xl shadow-sm p-4">
+          {/* Sidebar */}
+          <aside className="w-full  lg:w-[280px] lg:flex-shrink-0">
+            <div
+              className="rounded-2xl shadow-sm p-2"
+              style={{ background: t.sidebarBg, border: t.sidebarBorder }}
+            >
               <AccordionGroup
                 title="Danh mục sản phẩm"
                 items={CATEGORIES.map((c) => ({
@@ -164,17 +252,31 @@ export default function ProductsPage() {
                 }))}
                 checked={selectedCategories}
                 onChange={toggle(setSelectedCategories)}
+                t={t}
               />
+              {isMidAutumn && (
+                <AccordionGroup
+                  title="🌕 Đặc Biệt Trung Thu"
+                  items={CATEGORIES_TRUNG_THU.map((c) => ({
+                    key: c.label,
+                    label: c.label,
+                  }))}
+                  checked={selectedCategories}
+                  onChange={toggle(setSelectedCategories)}
+                  t={t}
+                />
+              )}
               <AccordionGroup
                 title="Các cửa hàng"
                 items={STORES}
                 checked={selectedStores}
                 onChange={toggle(setSelectedStores)}
+                t={t}
               />
             </div>
           </aside>
 
-          {/* ── Product grid ── */}
+          {/* Product grid */}
           <section className="flex-1 min-w-0 w-full">
             <div className="grid w-full grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
               {visibleProducts.map((product, index) => (
@@ -196,7 +298,10 @@ export default function ProductsPage() {
             </div>
 
             {loading && (
-              <p className="text-center text-gray-400 text-sm py-16">
+              <p
+                className="text-center text-sm py-16"
+                style={{ color: t.allSeenColor }}
+              >
                 Đang tải sản phẩm...
               </p>
             )}
@@ -208,14 +313,21 @@ export default function ProductsPage() {
             {!loading && !error && filteredProducts.length === 0 && (
               <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
                 <span className="text-5xl">📦</span>
-                <p className="text-gray-500 font-medium">
+                <p className="font-medium" style={{ color: t.emptyTextColor }}>
                   Không tìm thấy sản phẩm phù hợp.
                 </p>
                 {(selectedCategories.length > 0 ||
                   selectedStores.length > 0) && (
                   <button
                     onClick={resetFilters}
-                    className="mt-1 px-6 py-2 text-sm font-semibold text-white bg-[#F7a3a9] rounded-full hover:bg-[#f08a91] transition-colors"
+                    className="mt-1 px-6 py-2 text-sm font-semibold rounded-full transition-colors"
+                    style={{ background: t.resetBtnBg, color: t.resetBtnText }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = t.resetBtnHoverBg;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = t.resetBtnBg;
+                    }}
                   >
                     Xóa bộ lọc
                   </button>
@@ -227,12 +339,25 @@ export default function ProductsPage() {
               {hasMore ? (
                 <button
                   onClick={handleLoadMore}
-                  className="px-8 py-2.5 text-sm font-semibold text-[#F7a3a9] bg-white border-2 border-[#F7a3a9] rounded-full transition-all duration-300 hover:bg-[#F7a3a9] hover:text-white hover:shadow-md hover:scale-[1.02] active:scale-100"
+                  className="px-8 py-2.5 text-sm font-semibold rounded-full border-2 transition-all duration-300 hover:shadow-md hover:scale-[1.02] active:scale-100"
+                  style={{
+                    color: t.loadMoreColor,
+                    borderColor: t.loadMoreBorder,
+                    background: "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = t.loadMoreHoverBg;
+                    e.currentTarget.style.color = t.loadMoreHoverText;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = t.loadMoreColor;
+                  }}
                 >
                   Xem thêm sản phẩm
                 </button>
               ) : filteredProducts.length > 0 ? (
-                <p className="text-sm text-gray-400">
+                <p className="text-sm" style={{ color: t.allSeenColor }}>
                   Bạn đã xem tất cả sản phẩm.
                 </p>
               ) : null}

@@ -36,13 +36,13 @@ export const footerData = {
   socials: [
     {
       label: "Facebook",
-      href: "https://facebook.com/umbomilk",
+      href: "https://www.facebook.com/suabovang.UmBoMilk",
       iconName: "Facebook",
       hoverClass: "hover:text-[#1877F2]",
     },
     {
       label: "Instagram",
-      href: "https://instagram.com/umbomilk",
+      href: "https://www.instagram.com/suabovang_umbomilk?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==",
       iconName: "Instagram",
       hoverClass: "hover:text-[#E1306C]",
     },

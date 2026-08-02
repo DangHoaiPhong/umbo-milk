@@ -3,6 +3,19 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --font-sans: var(--font-koni);
+  --theme-primary: #f7a3a9;
+  --theme-secondary: #f08a91;
+  --theme-background: #fff8fb;
+  --theme-section-background: #fff3f4;
+  --theme-text: #2d3748;
+  --theme-button-background: #f7a3a9;
+  --theme-button-text: #ffffff;
+  --theme-card-background: #ffffff;
+  --theme-card-border: #f7d0d3;
+  --theme-border-radius: 24px;
+  --theme-shadow: 0 20px 60px rgba(247, 163, 169, 0.12);
+  --theme-font: var(--font-koni), sans-serif;
 }
 
 @theme inline {
@@ -19,30 +32,100 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-koni), sans-serif;
+  background: var(--theme-background);
+  color: var(--theme-text);
+  font-family: var(--theme-font);
+}
+
+.bg-theme {
+  background: var(--theme-background);
+}
+
+.bg-theme-section {
+  background: var(--theme-section-background);
+}
+
+.text-theme {
+  color: var(--theme-text);
+}
+
+.text-theme-primary {
+  color: var(--theme-primary);
+}
+
+.text-theme-secondary {
+  color: var(--theme-secondary);
+}
+
+.bg-theme-primary {
+  background: var(--theme-primary);
+}
+
+.text-theme-button {
+  color: var(--theme-button-text);
+}
+
+.text-theme-button-text {
+  color: var(--theme-button-text);
+}
+
+.bg-theme-card {
+  background: var(--theme-card-background);
+}
+
+.border-theme {
+  border-color: var(--theme-card-border);
+}
+
+.shadow-theme {
+  box-shadow: var(--theme-shadow);
+}
+
+.rounded-theme {
+  border-radius: var(--theme-border-radius);
 }
 
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeRight {
-  from { opacity: 0; transform: translateX(-20px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes fadeLeft {
-  from { opacity: 0; transform: translateX(20px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes badgePop {
-  0%   { transform: scale(0.6); }
-  60%  { transform: scale(1.25); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
-
-

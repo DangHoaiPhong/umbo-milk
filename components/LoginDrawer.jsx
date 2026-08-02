@@ -1,6 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
+import { useTheme } from "@/components/ThemeProvider";
 
 const DEMO_ACCOUNT = {
   email: "demo@umbo.vn",
@@ -9,9 +11,26 @@ const DEMO_ACCOUNT = {
   phone: "0909123456",
 };
 
+// Fallback tokens cho pink-classic
+const defaultTokens = {
+  panelBg: "white", panelBorder: "1px solid #f3f4f6", panelShadow: "0 20px 40px rgba(0,0,0,0.15)",
+  caretBg: "white", caretBorder: "#f3f4f6",
+  titleColor: "#1f2937",
+  demoBg: "#fff3f4", demoBorder: "#f7d0d3", demoText: "#a35a62", demoAccent: "#c0392b",
+  inputBg: "white", inputBorder: "#d1d5db", inputFocusColor: "#F7a3a9",
+  inputText: "#1f2937", inputPlaceholder: "#9ca3af",
+  showHideColor: "#9ca3af", errorColor: "#ef4444",
+  captchaColor: "#9ca3af", captchaLink: "#F7a3a9",
+  btnBg: "#F7a3a9", btnHoverBg: "#f08a91", btnShadow: "0 4px 14px rgba(247,163,169,0.3)",
+  footerColor: "#6b7280", footerLink: "#F7a3a9",
+  iconBg: "#fff0f1", iconColor: "#F7a3a9",
+  dividerColor: "#f7d0d3", closeColor: "#9ca3af", closeHoverColor: "#ef4444",
+  successBg: "#f0fdf4", successColor: "#22c55e",
+};
+
 const LoginDrawer = ({ open, onClose, triggerRef, onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [view, setView] = useState("login"); // "login" | "forgot"
+  const [view, setView] = useState("login");
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
   const [email, setEmail] = useState("");
@@ -19,16 +38,21 @@ const LoginDrawer = ({ open, onClose, triggerRef, onLogin }) => {
   const [error, setError] = useState("");
   const [pos, setPos] = useState({ top: 0, left: 0, caretLeft: 0 });
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef(null);
+  const { theme } = useTheme();
+
+  // Đọc tokens từ theme — fallback về default
+  const t = theme?.sectionTheme?.loginDrawer ?? defaultTokens;
 
   useEffect(() => {
+    setMounted(true);
     const check = () => setIsMobile(window.innerWidth < 1024);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // Tính vị trí popup desktop — bám theo icon
   const calcPos = () => {
     if (!triggerRef?.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
@@ -37,11 +61,7 @@ const LoginDrawer = ({ open, onClose, triggerRef, onLogin }) => {
     const iconCenterX = rect.left + rect.width / 2;
     let left = iconCenterX - popupWidth / 2;
     left = Math.max(8, Math.min(left, viewportWidth - popupWidth - 8));
-    setPos({
-      top: rect.bottom + 12, // fixed: dùng viewport coords trực tiếp
-      left,
-      caretLeft: iconCenterX - left - 8,
-    });
+    setPos({ top: rect.bottom + 12, left, caretLeft: iconCenterX - left - 8 });
   };
 
   useEffect(() => {
@@ -49,23 +69,14 @@ const LoginDrawer = ({ open, onClose, triggerRef, onLogin }) => {
     calcPos();
     window.addEventListener("scroll", calcPos, true);
     window.addEventListener("resize", calcPos);
-    return () => {
-      window.removeEventListener("scroll", calcPos, true);
-      window.removeEventListener("resize", calcPos);
-    };
+    return () => { window.removeEventListener("scroll", calcPos, true); window.removeEventListener("resize", calcPos); };
   }, [open, triggerRef, isMobile]);
 
-  // Đóng khi click ngoài
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target) &&
-        triggerRef?.current &&
-        !triggerRef.current.contains(e.target)
-      ) {
-        setView("login");
-        onClose();
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target) &&
+        triggerRef?.current && !triggerRef.current.contains(e.target)) {
+        setView("login"); onClose();
       }
     };
     if (open) document.addEventListener("mousedown", handleClickOutside);
@@ -73,99 +84,71 @@ const LoginDrawer = ({ open, onClose, triggerRef, onLogin }) => {
   }, [open, onClose, triggerRef]);
 
   const handleDemoLogin = () => {
-    if (
-      email.trim() === DEMO_ACCOUNT.email &&
-      password === DEMO_ACCOUNT.password
-    ) {
-      onLogin?.({
-        name: DEMO_ACCOUNT.name,
-        email: DEMO_ACCOUNT.email,
-        phone: DEMO_ACCOUNT.phone,
-        isVip: true,
-      });
-      setError("");
-      onClose();
-      return;
+    if (email.trim() === DEMO_ACCOUNT.email && password === DEMO_ACCOUNT.password) {
+      onLogin?.({ name: DEMO_ACCOUNT.name, email: DEMO_ACCOUNT.email, phone: DEMO_ACCOUNT.phone, isVip: true, isOwner: true });
+      setError(""); onClose(); return;
     }
-
     setError("Email hoặc mật khẩu không đúng. Hãy dùng demo@umbo.vn / 123456");
   };
 
+  const inputStyle = {
+    background: t.inputBg, border: `1px solid ${t.inputBorder}`,
+    color: t.inputText, borderRadius: "8px", padding: "8px 16px",
+    fontSize: "14px", outline: "none", width: "100%",
+  };
+  const onFocusInput = (e) => { e.target.style.borderColor = t.inputFocusColor; e.target.style.boxShadow = `0 0 0 3px ${t.inputFocusColor}22`; };
+  const onBlurInput  = (e) => { e.target.style.borderColor = t.inputBorder; e.target.style.boxShadow = "none"; };
+
   const loginContent = (
     <>
-      <h2 className="text-base font-bold text-gray-800 tracking-wide mb-5">
+      <h2 className="text-base font-bold tracking-wide mb-5" style={{ color: t.titleColor }}>
         ĐĂNG NHẬP TÀI KHOẢN
       </h2>
-      <div className="rounded-2xl border border-[#f7d0d3] bg-[#fff3f4] px-3 py-2 text-xs text-[#a35a62]">
-        Tài khoản demo: <span className="font-semibold">demo@umbo.vn</span> /{" "}
-        <span className="font-semibold">123456</span>
+      <div className="rounded-2xl px-3 py-2 text-xs mb-1"
+        style={{ background: t.demoBg, border: `1px solid ${t.demoBorder}`, color: t.demoText }}>
+        Tài khoản demo:{" "}
+        <span className="font-semibold" style={{ color: t.demoAccent }}>demo@umbo.vn</span> /{" "}
+        <span className="font-semibold" style={{ color: t.demoAccent }}>123456</span>
       </div>
       <div className="flex flex-col gap-3 mt-3">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (error) setError("");
-          }}
-          placeholder="Email"
-          className="border border-gray-300 rounded px-4 py-2 text-sm outline-none focus:border-[#F7a3a9]"
-        />
+        <input type="email" value={email} placeholder="Email" style={inputStyle}
+          onChange={(e) => { setEmail(e.target.value); if (error) setError(""); }}
+          onFocus={onFocusInput} onBlur={onBlurInput} />
         <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              if (error) setError("");
-            }}
-            placeholder="Mật khẩu"
-            className="w-full border border-gray-300 rounded px-4 py-2 text-sm outline-none focus:border-[#F7a3a9]"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"
-          >
+          <input type={showPassword ? "text" : "password"} value={password}
+            placeholder="Mật khẩu" style={{ ...inputStyle, paddingRight: "48px" }}
+            onChange={(e) => { setPassword(e.target.value); if (error) setError(""); }}
+            onFocus={onFocusInput} onBlur={onBlurInput} />
+          <button type="button" onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs"
+            style={{ color: t.showHideColor }}>
             {showPassword ? "Ẩn" : "Hiện"}
           </button>
         </div>
       </div>
-      {error ? <p className="mt-3 text-xs text-red-500">{error}</p> : null}
-      <p className="text-[11px] text-gray-400 mt-3 leading-relaxed">
+      {error && <p className="mt-3 text-xs" style={{ color: t.errorColor }}>{error}</p>}
+      <p className="text-[11px] mt-3 leading-relaxed" style={{ color: t.captchaColor }}>
         Trang này được bảo vệ bởi reCAPTCHA.{" "}
-        <a href="#" className="underline hover:text-[#F7a3a9]">
-          Chính sách bảo mật
-        </a>{" "}
-        và{" "}
-        <a href="#" className="underline hover:text-[#F7a3a9]">
-          Điều khoản dịch vụ
-        </a>{" "}
-        được áp dụng.
+        <a href="#" className="underline" style={{ color: t.captchaLink }}>Chính sách bảo mật</a>{" "}và{" "}
+        <a href="#" className="underline" style={{ color: t.captchaLink }}>Điều khoản dịch vụ</a>{" "}được áp dụng.
       </p>
-      <button
-        onClick={handleDemoLogin}
-        className="mt-4 w-full bg-[#F7a3a9] hover:bg-[#f08a91] text-white text-sm font-semibold py-2.5 rounded transition-colors"
-      >
+      <button onClick={handleDemoLogin}
+        className="mt-4 w-full text-white text-sm font-semibold py-2.5 rounded transition-all duration-200 hover:scale-[1.01]"
+        style={{ background: t.btnBg, boxShadow: t.btnShadow }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = t.btnHoverBg; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = t.btnBg; }}>
         Đăng nhập
       </button>
-      <div className="flex justify-between mt-3 text-xs text-gray-500">
-        <Link
-          href="/register"
-          onClick={onClose}
-          className="hover:text-[#F7a3a9] transition-colors"
-        >
+      <div className="flex justify-between mt-3 text-xs">
+        <Link href="/register" onClick={onClose} style={{ color: t.footerColor }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = t.footerLink; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = t.footerColor; }}>
           Tạo tài khoản
         </Link>
-        <button
-          type="button"
-          onClick={() => {
-            setView("forgot");
-            setForgotSent(false);
-            setForgotEmail("");
-          }}
-          className="hover:text-[#F7a3a9] transition-colors"
-        >
+        <button type="button" style={{ color: t.footerColor }}
+          onClick={() => { setView("forgot"); setForgotSent(false); setForgotEmail(""); }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = t.footerLink; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = t.footerColor; }}>
           Khôi phục mật khẩu
         </button>
       </div>
@@ -174,108 +157,60 @@ const LoginDrawer = ({ open, onClose, triggerRef, onLogin }) => {
 
   const forgotContent = (
     <>
-      {/* Tiêu đề */}
       <div className="flex flex-col items-center mb-5">
-        <div className="w-12 h-12 rounded-full bg-[#fff0f1] flex items-center justify-center mb-3">
-          <svg
-            className="w-6 h-6 text-[#F7a3a9]"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-            />
+        <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+          style={{ background: t.iconBg }}>
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            style={{ color: t.iconColor }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
           </svg>
         </div>
-        <h2 className="text-base font-bold text-gray-800 tracking-wide">
+        <h2 className="text-base font-bold tracking-wide" style={{ color: t.titleColor }}>
           KHÔI PHỤC MẬT KHẨU
         </h2>
-        {!forgotSent && (
-          <p className="text-xs text-gray-400 mt-1 text-center">
-            Nhập email của bạn:
-          </p>
-        )}
+        {!forgotSent && <p className="text-xs mt-1 text-center" style={{ color: t.captchaColor }}>Nhập email của bạn:</p>}
       </div>
 
       {forgotSent ? (
-        /* Trạng thái đã gửi */
         <div className="flex flex-col items-center gap-3 py-2">
-          <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center">
-            <svg
-              className="w-5 h-5 text-green-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
+          <div className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{ background: t.successBg }}>
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              style={{ color: t.successColor }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <p className="text-sm text-gray-600 text-center">
-            Đã gửi link khôi phục đến
-            <br />
-            <span className="font-semibold text-[#F7a3a9]">{forgotEmail}</span>
+          <p className="text-sm text-center" style={{ color: t.captchaColor }}>
+            Đã gửi link khôi phục đến<br />
+            <span className="font-semibold" style={{ color: t.footerLink }}>{forgotEmail}</span>
           </p>
-          <p className="text-xs text-gray-400 text-center">
-            Vui lòng kiểm tra hộp thư của bạn.
-          </p>
+          <p className="text-xs text-center" style={{ color: t.captchaColor }}>Vui lòng kiểm tra hộp thư của bạn.</p>
         </div>
       ) : (
-        /* Form nhập email */
         <>
-          <input
-            type="email"
-            placeholder="Email"
-            value={forgotEmail}
+          <input type="email" placeholder="Email" value={forgotEmail}
             onChange={(e) => setForgotEmail(e.target.value)}
-            className="w-full border border-gray-300 rounded px-4 py-2 text-sm outline-none focus:border-[#F7a3a9] focus:ring-2 focus:ring-[#F7a3a9]/20"
-          />
-          <p className="text-[10px] text-gray-400 mt-2 leading-relaxed">
+            style={inputStyle} onFocus={onFocusInput} onBlur={onBlurInput} />
+          <p className="text-[10px] mt-2 leading-relaxed" style={{ color: t.captchaColor }}>
             This site is protected by reCAPTCHA and the Google{" "}
-            <a
-              href="https://policies.google.com/privacy"
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-400 hover:underline"
-            >
-              Privacy Policy
-            </a>{" "}
-            and{" "}
-            <a
-              href="https://policies.google.com/terms"
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-400 hover:underline"
-            >
-              Terms of Service
-            </a>{" "}
-            apply.
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" style={{ color: t.captchaLink }}>Privacy Policy</a>{" "}and{" "}
+            <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer" style={{ color: t.captchaLink }}>Terms of Service</a>{" "}apply.
           </p>
-          <button
-            onClick={() => forgotEmail.trim() && setForgotSent(true)}
-            className="mt-4 w-full bg-[#F7a3a9] hover:bg-[#f08a91] active:scale-[0.98] text-white text-sm font-semibold py-2.5 rounded transition-all duration-200"
-          >
+          <button onClick={() => forgotEmail.trim() && setForgotSent(true)}
+            className="mt-4 w-full text-white text-sm font-semibold py-2.5 rounded transition-all duration-200 hover:scale-[1.01] active:scale-[0.98]"
+            style={{ background: t.btnBg }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = t.btnHoverBg; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = t.btnBg; }}>
             Khôi phục
           </button>
         </>
       )}
 
-      {/* Trở về */}
-      <p className="text-center text-xs text-gray-400 mt-4">
+      <p className="text-center text-xs mt-4" style={{ color: t.captchaColor }}>
         Bạn đã nhớ mật khẩu?{" "}
-        <button
-          type="button"
-          onClick={() => setView("login")}
-          className="text-[#F7a3a9] font-semibold hover:text-[#e07a82] transition-colors"
-        >
+        <button type="button" className="font-semibold" style={{ color: t.footerLink }}
+          onClick={() => setView("login")}>
           Trở về đăng nhập
         </button>
       </p>
@@ -283,91 +218,53 @@ const LoginDrawer = ({ open, onClose, triggerRef, onLogin }) => {
   );
 
   const formContent = view === "forgot" ? forgotContent : loginContent;
+  if (!open || !mounted) return null;
+  const modalRoot = typeof document !== "undefined" ? document.body : null;
+  if (!modalRoot) return null;
 
-  if (!open) return null;
+  const modalLayerStyle = { position: "fixed", inset: 0, zIndex: 1000, isolation: "isolate", overflow: "visible" };
 
-  // Mobile: popup căn giữa màn hình
+  const CloseBtn = () => (
+    <button onClick={onClose} aria-label="Đóng"
+      className="absolute top-3 right-3 transition-colors"
+      style={{ color: t.closeColor }}
+      onMouseEnter={(e) => { e.currentTarget.style.color = t.closeHoverColor; }}
+      onMouseLeave={(e) => { e.currentTarget.style.color = t.closeColor; }}>
+      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  );
+
   if (isMobile) {
-    return (
-      <>
-        <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
-        <div
-          ref={dropdownRef}
-          className="fixed z-50 bg-white rounded-2xl shadow-2xl w-[calc(100vw-32px)] max-w-sm"
-          style={{
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          <button
-            onClick={onClose}
-            className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors"
-            aria-label="Đóng"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+    return createPortal(
+      <div style={modalLayerStyle}>
+        <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+        <div ref={dropdownRef} className="absolute w-[calc(100vw-32px)] max-w-sm rounded-2xl"
+          style={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 1001,
+            background: t.panelBg, border: t.panelBorder, boxShadow: t.panelShadow }}>
+          <CloseBtn />
           <div className="px-6 py-6">{formContent}</div>
         </div>
-      </>
+      </div>,
+      modalRoot,
     );
   }
 
-  return (
-    <>
-      {/* Overlay */}
-      <div className="fixed inset-0 z-40" onClick={onClose} />
-
-      {/* Popup — bám theo icon Login trên mọi màn hình */}
-      <div
-        ref={dropdownRef}
-        style={{ top: pos.top, left: pos.left }}
-        className="fixed w-80 bg-white rounded-lg shadow-xl z-50 border border-gray-100"
-      >
-        {/* Mũi tên trỏ vào icon */}
-        <div
-          style={{ left: pos.caretLeft }}
-          className="absolute -top-2 w-4 h-4 bg-white border-l border-t border-gray-100 rotate-45"
-        />
-
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors"
-          aria-label="Đóng"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-
+  return createPortal(
+    <div style={modalLayerStyle}>
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div ref={dropdownRef} className="absolute w-80 rounded-lg"
+        style={{ top: pos.top, left: pos.left, zIndex: 1001,
+          background: t.panelBg, border: t.panelBorder, boxShadow: t.panelShadow }}>
+        <div className="absolute -top-2 w-4 h-4 rotate-45"
+          style={{ left: pos.caretLeft, background: t.caretBg,
+            borderLeft: `1px solid ${t.caretBorder}`, borderTop: `1px solid ${t.caretBorder}` }} />
+        <CloseBtn />
         <div className="px-6 py-6">{formContent}</div>
       </div>
-    </>
+    </div>,
+    modalRoot,
   );
 };
 

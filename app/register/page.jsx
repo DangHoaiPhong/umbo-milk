@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTheme } from "@/components/ThemeProvider";
 import umboMilk from "../../assets/images/umboMilk.jpg";
 import EmailForm from "./EmailForm";
 import PhoneForm from "./PhoneForm";
@@ -59,14 +60,57 @@ const PhoneIcon = () => (
   </svg>
 );
 
+const defaultRegisterTokens = {
+  pageBg: "#3d0606",
+  cardBg: "#2d0404",
+  cardBorder: "rgba(255,228,160,0.15)",
+  shadow: "0 32px 90px rgba(0,0,0,0.45)",
+  textPrimary: "#FFF6E5",
+  textSecondary: "#FFDDC0",
+  accentColor: "#FFE4A0",
+  accentBg: "rgba(255,228,160,0.08)",
+  buttonBg: "#FFE4A0",
+  buttonText: "#7B0000",
+  buttonHoverBg: "#ffd060",
+  inputBg: "rgba(255,228,160,0.06)",
+  inputBorder: "rgba(255,228,160,0.25)",
+  inputText: "#FFF6E5",
+  inputPlaceholder: "rgba(255,220,192,0.6)",
+  divider: "rgba(255,228,160,0.15)",
+  linkColor: "#FFE4A0",
+  linkHoverColor: "#ffd060",
+  googleBg: "#2d0404",
+  googleBorder: "rgba(255,228,160,0.15)",
+  googleText: "#FFE4A0",
+  errorText: "#FF6B6B",
+  mutedText: "rgba(255,228,160,0.7)",
+};
+
 export default function RegisterPage() {
   const [mode, setMode] = useState(null); // null | "email" | "phone"
+  const { theme } = useTheme();
+  const t = theme?.sectionTheme?.registerPage ?? defaultRegisterTokens;
+  const pageStyle = { background: t.pageBg, color: t.textPrimary };
+  const cardStyle = {
+    background: t.cardBg,
+    border: `1px solid ${t.cardBorder}`,
+    boxShadow: t.shadow,
+  };
+  const googleButtonStyle = {
+    background: t.googleBg,
+    border: `1px solid ${t.googleBorder}`,
+    color: t.googleText,
+  };
+  const primaryButtonStyle = { background: t.buttonBg, color: t.buttonText };
 
   return (
-    <div className="min-h-screen bg-[#fff5f6] flex items-center justify-center px-4">
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={pageStyle}
+    >
       <div
-        className="w-full max-w-[560px] bg-white rounded-[28px] shadow-md px-10 py-12 animate-slideUp"
-        style={{ animation: "slideUp 400ms ease-out both" }}
+        className="w-full max-w-[560px] rounded-[28px] px-10 py-12 animate-slideUp"
+        style={{ ...cardStyle, animation: "slideUp 400ms ease-out both" }}
       >
         {/* Logo + Header */}
         <div className="flex flex-col items-center mb-8">
@@ -77,26 +121,37 @@ export default function RegisterPage() {
             height={80}
             className="rounded-full mb-3"
           />
-          <h1 className="text-2xl font-bold text-gray-800 tracking-tight">
+          <h1
+            className="text-2xl font-bold tracking-tight"
+            style={{ color: t.textPrimary }}
+          >
             Đăng ký tài khoản
           </h1>
-          <p className="text-sm text-gray-400 mt-2 text-center max-w-xs leading-relaxed">
+          <p
+            className="text-sm mt-2 text-center max-w-xs leading-relaxed"
+            style={{ color: t.textSecondary }}
+          >
             Tạo tài khoản để mua hàng, theo dõi đơn hàng và nhận các ưu đãi mới
             nhất.
           </p>
         </div>
 
         {/* Google */}
-        <button className="w-full flex items-center justify-center gap-3 h-[52px] border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-[#fff0f1] hover:shadow-sm transition-all duration-300">
+        <button
+          className="w-full flex items-center justify-center gap-3 h-[52px] rounded-full text-sm font-medium transition-all duration-300"
+          style={googleButtonStyle}
+        >
           <GoogleIcon />
           Đăng ký bằng Google
         </button>
 
         {/* Divider */}
         <div className="flex items-center gap-3 my-5">
-          <div className="flex-1 h-px bg-gray-100" />
-          <span className="text-xs text-gray-400">Hoặc</span>
-          <div className="flex-1 h-px bg-gray-100" />
+          <div className="flex-1 h-px" style={{ background: t.divider }} />
+          <span className="text-xs" style={{ color: t.mutedText }}>
+            Hoặc
+          </span>
+          <div className="flex-1 h-px" style={{ background: t.divider }} />
         </div>
 
         {/* Email / Phone buttons hoặc Form */}
@@ -104,7 +159,8 @@ export default function RegisterPage() {
           <div className="flex flex-col gap-3">
             <button
               onClick={() => setMode("phone")}
-              className="w-full flex items-center justify-center gap-3 h-[52px] border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-[#fff0f1] hover:shadow-sm transition-all duration-300"
+              className="w-full flex items-center justify-center gap-3 h-[52px] rounded-full text-sm font-medium transition-all duration-300"
+              style={primaryButtonStyle}
             >
               <PhoneIcon />
               Đăng ký bằng Số điện thoại
@@ -117,11 +173,15 @@ export default function RegisterPage() {
         {mode === "phone" && <PhoneForm onBack={() => setMode(null)} />}
 
         {/* Footer */}
-        <p className="text-center text-sm text-gray-400 mt-7 mb-2">
+        <p
+          className="text-center text-sm mt-7 mb-2"
+          style={{ color: t.mutedText }}
+        >
           Đã có tài khoản?{" "}
           <Link
             href="/"
-            className="text-[#F7a3a9] font-semibold hover:text-[#e07a82] transition-colors"
+            className="font-semibold transition-colors"
+            style={{ color: t.linkColor }}
           >
             Đăng nhập ngay
           </Link>
