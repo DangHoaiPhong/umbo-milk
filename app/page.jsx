@@ -33,19 +33,19 @@ function StorySection() {
     : "#fde2e0";
 
   return (
-    <section className="relative py-8 px-4" style={{ background: sectionBg }}>
+    <section className="relative px-4 py-8" style={{ background: sectionBg }}>
       {/* Trang trí nhẹ khi autumn */}
       {isMidAutumn && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
-            className="absolute top-0 left-0 right-0 h-[2px]"
+            className="absolute inset-x-0 top-0 h-0.5"
             style={{
               background:
                 "linear-gradient(90deg, transparent, rgba(255,228,160,0.4), transparent)",
             }}
           />
           <div
-            className="absolute bottom-0 left-0 right-0 h-[2px]"
+            className="absolute inset-x-0 bottom-0 h-0.5"
             style={{
               background:
                 "linear-gradient(90deg, transparent, rgba(255,228,160,0.4), transparent)",

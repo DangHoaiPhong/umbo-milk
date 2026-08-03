@@ -18,7 +18,7 @@ export default function ClientShell({ children }) {
   const pathname = usePathname();
   const hideChrome = HIDE_CHROME.includes(pathname);
 
-  if (hideChrome) return <>{children}</>;
+  if (hideChrome) return children;
 
   return (
     <CartProvider>

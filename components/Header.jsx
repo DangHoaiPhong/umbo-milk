@@ -183,7 +183,9 @@ const Header = () => {
       phone: profile?.phone || "",
       password: profile?.password || "",
       isVip: Boolean(profile?.isVip),
-      isOwner: Boolean(profile?.isOwner || profile?.email === "demo@umbo.vn"),
+      isOwner: Boolean(
+        profile?.isOwner || profile?.email?.toLowerCase() === "admin@umbo.vn",
+      ),
     };
     setUserProfile(safeProfile);
     setIsLoggedIn(true);

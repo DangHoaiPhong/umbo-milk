@@ -69,9 +69,9 @@ export default function VideoSection() {
         }
       `}</style>
 
-      <div className="max-w-5xl mx-auto">
+      <div className="mx-auto max-w-5xl">
         {/* Header */}
-        <div className="text-center mb-10">
+        <div className="mb-10 text-center">
           <p
             className="text-xs font-semibold tracking-[0.3em] uppercase mb-2"
             style={{ color: subtitleColor }}
@@ -86,7 +86,7 @@ export default function VideoSection() {
           </h2>
           <div className="mt-3 flex items-center justify-center gap-2">
             <div
-              className="h-[2px] w-10 rounded-full"
+              className="h-0.5 w-10 rounded-full"
               style={{ background: accentColor }}
             />
             <div
@@ -94,7 +94,7 @@ export default function VideoSection() {
               style={{ background: accentColor, opacity: 0.5 }}
             />
             <div
-              className="h-[2px] w-5 rounded-full"
+              className="h-0.5 w-5 rounded-full"
               style={{ background: accentColor, opacity: 0.4 }}
             />
           </div>
@@ -138,11 +138,11 @@ export default function VideoSection() {
         </div>
 
         {/* Dot indicators (mobile only) */}
-        <div className="flex justify-center gap-2 mt-6 md:hidden">
+        <div className="mt-6 flex justify-center gap-2 md:hidden">
           {videoList.map((video) => (
             <div
               key={video.id}
-              className="w-2 h-2 rounded-full"
+              className="h-2 w-2 rounded-full"
               style={{ background: accentColor, opacity: 0.4 }}
             />
           ))}

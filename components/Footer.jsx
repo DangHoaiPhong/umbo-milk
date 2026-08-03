@@ -12,13 +12,28 @@ const FacebookIcon = () => (
   </svg>
 );
 const InstagramIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
     <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
   </svg>
 );
-const ICON_MAP = { MapPin, Mail, Phone, Facebook: FacebookIcon, Instagram: InstagramIcon };
+const ICON_MAP = {
+  MapPin,
+  Mail,
+  Phone,
+  Facebook: FacebookIcon,
+  Instagram: InstagramIcon,
+};
 
 // ── Trang trí Footer Trung Thu ────────────────────────────────────────────────
 function FooterDecor({ accentTop }) {
@@ -28,32 +43,80 @@ function FooterDecor({ accentTop }) {
         @keyframes footerFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
         @keyframes footerGlow{0%,100%{opacity:.15}50%{opacity:.35}}
       `}</style>
-      <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: accentTop }} />
-      <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full"
-        style={{ background: "radial-gradient(circle, rgba(255,228,160,0.12) 0%, transparent 70%)" }} />
-      <svg className="absolute left-6 top-6 w-10 h-14 opacity-20"
-        style={{ animation: "footerFloat 4s ease-in-out infinite" }} viewBox="0 0 40 56" fill="none">
-        <line x1="20" y1="0" x2="20" y2="6" stroke="#FFE4A0" strokeWidth="1.2"/>
-        <rect x="5" y="6" width="30" height="4" rx="2" fill="#c0392b"/>
-        <ellipse cx="20" cy="30" rx="15" ry="18" fill="#FFE4A0" opacity=".8"/>
-        <ellipse cx="20" cy="30" rx="7" ry="9" fill="white" opacity=".1"/>
-        <rect x="5" y="46" width="30" height="4" rx="2" fill="#c0392b"/>
+      <div
+        className="absolute inset-x-0 top-0 h-px"
+        style={{ background: accentTop }}
+      />
+      <div
+        className="absolute -top-8 -right-8 h-40 w-40 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(255,228,160,0.12) 0%, transparent 70%)",
+        }}
+      />
+      <svg
+        className="absolute left-6 top-6 h-14 w-10 opacity-20"
+        style={{ animation: "footerFloat 4s ease-in-out infinite" }}
+        viewBox="0 0 40 56"
+        fill="none"
+      >
+        <line
+          x1="20"
+          y1="0"
+          x2="20"
+          y2="6"
+          stroke="#FFE4A0"
+          strokeWidth="1.2"
+        />
+        <rect x="5" y="6" width="30" height="4" rx="2" fill="#c0392b" />
+        <ellipse cx="20" cy="30" rx="15" ry="18" fill="#FFE4A0" opacity=".8" />
+        <ellipse cx="20" cy="30" rx="7" ry="9" fill="white" opacity=".1" />
+        <rect x="5" y="46" width="30" height="4" rx="2" fill="#c0392b" />
       </svg>
-      <svg className="absolute right-6 top-6 w-8 h-12 opacity-20"
-        style={{ animation: "footerFloat 3.5s ease-in-out .7s infinite" }} viewBox="0 0 32 48" fill="none">
-        <line x1="16" y1="0" x2="16" y2="5" stroke="#FFE4A0" strokeWidth="1.2"/>
-        <rect x="4" y="5" width="24" height="3" rx="1.5" fill="#c0392b"/>
-        <ellipse cx="16" cy="25" rx="12" ry="15" fill="#ffb347" opacity=".75"/>
-        <rect x="4" y="38" width="24" height="3" rx="1.5" fill="#c0392b"/>
+      <svg
+        className="absolute right-6 top-6 h-12 w-8 opacity-20"
+        style={{ animation: "footerFloat 3.5s ease-in-out .7s infinite" }}
+        viewBox="0 0 32 48"
+        fill="none"
+      >
+        <line
+          x1="16"
+          y1="0"
+          x2="16"
+          y2="5"
+          stroke="#FFE4A0"
+          strokeWidth="1.2"
+        />
+        <rect x="4" y="5" width="24" height="3" rx="1.5" fill="#c0392b" />
+        <ellipse cx="16" cy="25" rx="12" ry="15" fill="#ffb347" opacity=".75" />
+        <rect x="4" y="38" width="24" height="3" rx="1.5" fill="#c0392b" />
       </svg>
-      <svg className="absolute -bottom-6 -left-6 w-32 h-32 opacity-10" viewBox="0 0 128 128" fill="none">
-        <circle cx="20" cy="108" r="55" stroke="#FFE4A0" strokeWidth="1"/>
-        <circle cx="20" cy="108" r="40" stroke="#FFE4A0" strokeWidth=".7"/>
-        <circle cx="20" cy="108" r="25" stroke="#FFE4A0" strokeWidth=".5"/>
+      <svg
+        className="absolute -bottom-6 -left-6 h-32 w-32 opacity-10"
+        viewBox="0 0 128 128"
+        fill="none"
+      >
+        <circle cx="20" cy="108" r="55" stroke="#FFE4A0" strokeWidth="1" />
+        <circle cx="20" cy="108" r="40" stroke="#FFE4A0" strokeWidth=".7" />
+        <circle cx="20" cy="108" r="25" stroke="#FFE4A0" strokeWidth=".5" />
       </svg>
-      {[[20,30],[80,20],[40,70],[70,60],[10,80],[90,75]].map(([x,y],i)=>(
-        <div key={i} className="absolute w-0.5 h-0.5 rounded-full bg-[#FFE4A0]"
-          style={{ left:`${x}%`, top:`${y}%`, animation:`footerGlow ${1.8+i*0.35}s ease-in-out ${i*0.25}s infinite` }}/>
+      {[
+        [20, 30],
+        [80, 20],
+        [40, 70],
+        [70, 60],
+        [10, 80],
+        [90, 75],
+      ].map(([x, y], i) => (
+        <div
+          key={i}
+          className="absolute w-0.5 h-0.5 rounded-full bg-[#FFE4A0]"
+          style={{
+            left: `${x}%`,
+            top: `${y}%`,
+            animation: `footerGlow ${1.8 + i * 0.35}s ease-in-out ${i * 0.25}s infinite`,
+          }}
+        />
       ))}
     </div>
   );
@@ -62,13 +125,27 @@ function FooterDecor({ accentTop }) {
 function ContactRow({ iconName, text, href, ft }) {
   const Icon = ICON_MAP[iconName];
   const content = (
-    <span className="flex items-start gap-2.5 text-sm leading-relaxed group" style={{ color: ft.contactColor }}>
-      <Icon size={15} className="mt-0.5 shrink-0 transition-transform duration-200 group-hover:scale-110"
-        style={{ color: ft.iconColor }} />
-      <span className="transition-colors duration-200 group-hover:text-white">{text}</span>
+    <span
+      className="flex items-start gap-2.5 text-sm leading-relaxed group"
+      style={{ color: ft.contactColor }}
+    >
+      <Icon
+        size={15}
+        className="mt-0.5 shrink-0 transition-transform duration-200 group-hover:scale-110"
+        style={{ color: ft.iconColor }}
+      />
+      <span className="transition-colors duration-200 group-hover:text-white">
+        {text}
+      </span>
     </span>
   );
-  return href ? <a href={href} className="block">{content}</a> : <div>{content}</div>;
+  return href ? (
+    <a href={href} className="block">
+      {content}
+    </a>
+  ) : (
+    <div>{content}</div>
+  );
 }
 
 function LinkList({ items, ft }) {
@@ -76,11 +153,17 @@ function LinkList({ items, ft }) {
     <ul className="space-y-3">
       {items.map((item) => (
         <li key={item.href}>
-          <a href={item.href}
+          <a
+            href={item.href}
             className="text-sm leading-relaxed transition-all duration-200 hover:translate-x-1.5 inline-block"
             style={{ color: ft.linkColor }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = ft.linkHoverColor; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = ft.linkColor; }}>
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = ft.linkHoverColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = ft.linkColor;
+            }}
+          >
             {item.label}
           </a>
         </li>
@@ -92,13 +175,20 @@ function LinkList({ items, ft }) {
 function Col1Content({ description, contacts, ft }) {
   return (
     <div className="space-y-3">
-      <p className="text-sm leading-[1.8]" style={{ color: ft.descColor }}>{description}</p>
+      <p className="text-sm leading-[1.8]" style={{ color: ft.descColor }}>
+        {description}
+      </p>
       <div className="space-y-3 pt-1">
-        {contacts.map((c, i) => <ContactRow key={i} {...c} ft={ft} />)}
+        {contacts.map((c, i) => (
+          <ContactRow key={i} {...c} ft={ft} />
+        ))}
       </div>
       <div className="pt-2">
-        <img src={chungchi.src ?? chungchi} alt="Đã thông báo Bộ Công Thương"
-          className="h-12 w-auto opacity-70 hover:opacity-100 transition-opacity duration-200" />
+        <img
+          src={chungchi.src ?? chungchi}
+          alt="Đã thông báo Bộ Công Thương"
+          className="h-12 w-auto opacity-70 hover:opacity-100 transition-opacity duration-200"
+        />
       </div>
     </div>
   );
@@ -111,13 +201,24 @@ function Col4Content({ socials, ft }) {
         const Icon = ICON_MAP[s.iconName];
         return (
           <li key={s.href}>
-            <a href={s.href} target="_blank" rel="noopener noreferrer"
+            <a
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2.5 text-sm transition-all duration-200 hover:translate-x-1.5 group"
               style={{ color: ft.linkColor }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = ft.linkHoverColor; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = ft.linkColor; }}>
-              <Icon size={16} className="shrink-0 transition-transform duration-200 group-hover:scale-110"
-                style={{ color: ft.iconColor }} />
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = ft.linkHoverColor;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = ft.linkColor;
+              }}
+            >
+              <Icon
+                size={16}
+                className="shrink-0 transition-transform duration-200 group-hover:scale-110"
+                style={{ color: ft.iconColor }}
+              />
               {s.label}
             </a>
           </li>
@@ -131,21 +232,40 @@ function AccordionItem({ title, children, isLast, ft }) {
   const [open, setOpen] = useState(false);
   const bodyRef = useRef(null);
   return (
-    <div style={{ borderBottom: isLast ? "none" : `1px solid ${ft.dividerColor}` }}>
-      <button onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between py-4 px-5 text-left">
-        <span className="font-bold uppercase text-sm"
-          style={{ color: ft.sectionTitleColor, letterSpacing: ft.sectionTitleTracking }}>
+    <div
+      style={{ borderBottom: isLast ? "none" : `1px solid ${ft.dividerColor}` }}
+    >
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between py-4 px-5 text-left"
+      >
+        <span
+          className="font-bold uppercase text-sm"
+          style={{
+            color: ft.sectionTitleColor,
+            letterSpacing: ft.sectionTitleTracking,
+          }}
+        >
           {title}
         </span>
-        <ChevronDown size={16} style={{ color: ft.chevronColor,
-          transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 300ms" }} />
+        <ChevronDown
+          size={16}
+          style={{
+            color: ft.chevronColor,
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 300ms",
+          }}
+        />
       </button>
-      <div ref={bodyRef} style={{
-        maxHeight: open ? bodyRef.current?.scrollHeight + "px" : "0px",
-        opacity: open ? 1 : 0, overflow: "hidden",
-        transition: "max-height 350ms ease-in-out, opacity 300ms ease-in-out",
-      }}>
+      <div
+        ref={bodyRef}
+        style={{
+          maxHeight: open ? bodyRef.current?.scrollHeight + "px" : "0px",
+          opacity: open ? 1 : 0,
+          overflow: "hidden",
+          transition: "max-height 350ms ease-in-out, opacity 300ms ease-in-out",
+        }}
+      >
         <div className="px-5 pb-5">{children}</div>
       </div>
     </div>
@@ -154,11 +274,18 @@ function AccordionItem({ title, children, isLast, ft }) {
 
 // ── Default footer tokens (pink-classic) ─────────────────────────────────────
 const defaultFt = {
-  sectionTitleColor: "#F7a3a9", sectionTitleTracking: "0.15em",
-  linkColor: "#F7a3a9", linkHoverColor: "#FFFFFF",
-  iconColor: "#F7a3a9", descColor: "#F7a3a9", contactColor: "#F7a3a9",
-  dividerColor: "rgba(255,255,255,0.15)", chevronColor: "#F7a3a9",
-  copyrightColor: "#F7a3a9", copyrightAccent: null, copyrightLabel: null,
+  sectionTitleColor: "#F7a3a9",
+  sectionTitleTracking: "0.15em",
+  linkColor: "#F7a3a9",
+  linkHoverColor: "#FFFFFF",
+  iconColor: "#F7a3a9",
+  descColor: "#F7a3a9",
+  contactColor: "#F7a3a9",
+  dividerColor: "rgba(255,255,255,0.15)",
+  chevronColor: "#F7a3a9",
+  copyrightColor: "#F7a3a9",
+  copyrightAccent: null,
+  copyrightLabel: null,
 };
 
 export default function Footer() {
@@ -170,10 +297,12 @@ export default function Footer() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    el.style.opacity = "0"; el.style.transform = "translateY(30px)";
+    el.style.opacity = "0";
+    el.style.transform = "translateY(30px)";
     const raf = requestAnimationFrame(() => {
       el.style.transition = "opacity 700ms ease, transform 700ms ease";
-      el.style.opacity = "1"; el.style.transform = "translateY(0)";
+      el.style.opacity = "1";
+      el.style.transform = "translateY(0)";
     });
     return () => cancelAnimationFrame(raf);
   }, []);
@@ -182,12 +311,25 @@ export default function Footer() {
 
   const footerBg = isMidAutumn
     ? { background: ft?.bg }
-    : { backgroundImage: "url('https://www.transparenttextures.com/patterns/concrete-wall.png')",
-        backgroundSize: "cover", backgroundPosition: "center", backgroundColor: "#111" };
+    : {
+        backgroundImage:
+          "url('https://www.transparenttextures.com/patterns/concrete-wall.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundColor: "#111",
+      };
 
   const copyrightStyle = isMidAutumn
-    ? { background: ft?.copyrightBg, borderTop: ft?.copyrightBorder, minHeight: "60px" }
-    : { background: "#000", borderTop: "1px solid rgba(255,255,255,0.1)", minHeight: "60px" };
+    ? {
+        background: ft?.copyrightBg,
+        borderTop: ft?.copyrightBorder,
+        minHeight: "60px",
+      }
+    : {
+        background: "#000",
+        borderTop: "1px solid rgba(255,255,255,0.1)",
+        minHeight: "60px",
+      };
 
   const sectionTitleStyle = {
     color: ft?.sectionTitleColor,
@@ -203,16 +345,26 @@ export default function Footer() {
     <footer ref={ref} className="w-full">
       <div className="relative w-full" style={footerBg}>
         {!isMidAutumn && (
-          <div className="absolute inset-0 pointer-events-none" style={{ background: "rgba(0,0,0,0.35)" }} />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "rgba(0,0,0,0.35)" }}
+          />
         )}
         {isMidAutumn && <FooterDecor accentTop={ft?.accentTop} />}
 
         {/* ── DESKTOP ── */}
-        <div className="relative z-10 max-w-[1280px] mx-auto px-8 py-20 hidden lg:block">
-          <div className="grid gap-10" style={{ gridTemplateColumns: "2fr 1fr 1fr 1.5fr" }}>
+        <div className="relative z-10 mx-auto hidden max-w-7xl px-8 py-20 lg:block">
+          <div
+            className="grid gap-10"
+            style={{ gridTemplateColumns: "2fr 1fr 1fr 1.5fr" }}
+          >
             <div className="space-y-5">
               <span style={sectionTitleStyle}>Về Um Bò Milk</span>
-              <Col1Content description={description} contacts={contacts} ft={ft} />
+              <Col1Content
+                description={description}
+                contacts={contacts}
+                ft={ft}
+              />
             </div>
             <div>
               <span style={sectionTitleStyle}>Giới thiệu</span>
@@ -231,9 +383,20 @@ export default function Footer() {
 
         {/* ── MOBILE / TABLET ── */}
         <div className="relative z-10 lg:hidden">
-          {["Về Um Bò Milk", "Giới thiệu", "Liên kết", "Kết nối với Um Bò Milk"].map((title, i) => (
+          {[
+            "Về Um Bò Milk",
+            "Giới thiệu",
+            "Liên kết",
+            "Kết nối với Um Bò Milk",
+          ].map((title, i) => (
             <AccordionItem key={title} title={title} isLast={i === 3} ft={ft}>
-              {i === 0 && <Col1Content description={description} contacts={contacts} ft={ft} />}
+              {i === 0 && (
+                <Col1Content
+                  description={description}
+                  contacts={contacts}
+                  ft={ft}
+                />
+              )}
               {i === 1 && <LinkList items={intro} ft={ft} />}
               {i === 2 && <LinkList items={links} ft={ft} />}
               {i === 3 && <Col4Content socials={socials} ft={ft} />}
@@ -244,12 +407,15 @@ export default function Footer() {
 
       {/* Copyright */}
       <div className="w-full" style={copyrightStyle}>
-        <div className="max-w-[1280px] mx-auto px-8 h-[60px] flex items-center justify-between">
+        <div className="mx-auto flex h-15 max-w-7xl items-center justify-between px-8">
           <p className="text-xs" style={{ color: ft?.copyrightColor }}>
             © Bản quyền thuộc về UMBOMILK.COM
           </p>
           {ft?.copyrightLabel && (
-            <p className="text-xs opacity-50" style={{ color: ft?.copyrightAccent }}>
+            <p
+              className="text-xs opacity-50"
+              style={{ color: ft?.copyrightAccent }}
+            >
               {ft.copyrightLabel}
             </p>
           )}

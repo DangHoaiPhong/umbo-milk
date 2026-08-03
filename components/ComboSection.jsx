@@ -17,7 +17,7 @@ function ComboDecor() {
         @keyframes shimmer{0%,100%{opacity:.2}50%{opacity:.5}}
       `}</style>
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full"
+        className="absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 rounded-full"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(255,228,160,0.12) 0%, transparent 70%)",
@@ -253,7 +253,7 @@ const ComboSection = () => {
           onClick={prev}
           disabled={current === 0}
           aria-label="Trước"
-          className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="absolute -left-5 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-30"
           style={navStyle}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -262,7 +262,7 @@ const ComboSection = () => {
           onClick={next}
           disabled={current === maxIndex}
           aria-label="Tiếp"
-          className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="absolute -right-5 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-30"
           style={navStyle}
         >
           <ChevronRight className="w-5 h-5" />
@@ -279,7 +279,7 @@ const ComboSection = () => {
             <h2 className="text-xl sm:text-2xl font-bold text-[#1F2937] uppercase leading-tight">
               COMBO TIẾT KIỆM
             </h2>
-            <div className="mt-3 h-1 w-[70px] bg-[#F7a3a9] rounded-full" />
+            <div className="mt-3 h-1 w-[70px] rounded-full bg-[#F7a3a9]" />
           </div>
           <div className="relative">
             {renderNav({
@@ -296,7 +296,7 @@ const ComboSection = () => {
                   key={i}
                   onClick={() => setCurrent(i)}
                   aria-label={`Combo ${i + 1}`}
-                  className={`rounded-full transition-all duration-300 ${i === current ? "w-6 h-2.5 bg-[#F7a3a9]" : "w-2.5 h-2.5 bg-[#F7a3a9]/30"}`}
+                  className={`rounded-full transition-all duration-300 ${i === current ? "h-2.5 w-6 bg-[#F7a3a9]" : "h-2.5 w-2.5 bg-[#F7a3a9]/30"}`}
                 />
               ))}
             </div>

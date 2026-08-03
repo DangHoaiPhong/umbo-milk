@@ -1,4 +1,3 @@
-/** @type {import('../types/footer').FooterData} */
 export const footerData = {
   description:
     "Um Bò Milk – thương hiệu sữa tươi thuần khiết từ những chú bò được nuôi dưỡng tự nhiên. Chúng tôi cam kết mang đến nguồn dinh dưỡng sạch, an toàn và thơm ngon cho mọi gia đình Việt.",

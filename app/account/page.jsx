@@ -23,11 +23,11 @@ const ACCOUNT_STORAGE_KEY = "umbo_account_profile";
 
 const initialProfile = {
   name: "Khách hàng Umbo",
-  email: "demo@umbo.vn",
-  phone: "0909123456",
+  email: "",
+  phone: "",
   dateOfBirth: "",
   gender: "Khác",
-  password: "123456",
+  password: "",
   isVip: true,
   isOwner: false,
 };

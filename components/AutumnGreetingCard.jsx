@@ -24,12 +24,39 @@ const sparkles = Array.from({ length: 16 }, (_, index) => ({
   duration: `${2.6 + (index % 4) * 0.5}s`,
 }));
 
+const cardSurfaceStyle = {
+  background:
+    "linear-gradient(160deg, rgba(255,228,160,0.06), rgba(255,255,255,0.02))",
+  backfaceVisibility: "hidden",
+};
+
+const cardShellClassName =
+  "relative flex min-h-[320px] flex-col items-center justify-center rounded-[22px] border border-[#FFE4A0]/20 px-4 py-6 text-center text-[#FFF7D8] sm:min-h-[460px] sm:rounded-[24px] sm:px-8 sm:py-8";
+
+const actionButtonClassName =
+  "mt-7 rounded-full bg-[linear-gradient(135deg,#FFD86A_0%,#FFB800_100%)] px-6 py-3 text-sm font-semibold text-[#7B0000] shadow-[0_10px_30px_rgba(255,200,0,0.25)]";
+
+function getGreetingPhase(phase) {
+  return (
+    phase === "ready" ||
+    phase === "opening" ||
+    phase === "opened" ||
+    phase === "closing"
+  );
+}
+
 function MoonDecor() {
   return (
     <div className="relative mx-auto mb-5 flex h-20 w-20 items-center justify-center">
       <div className="absolute inset-0 rounded-full bg-[#FFE8A8] opacity-25 blur-xl" />
       <div className="absolute inset-2 rounded-full border border-[#FFE8A8]/40" />
-      <div className="relative h-14 w-14 rounded-full bg-[radial-gradient(circle_at_35%_35%,_#FFF9E5_0%,_#FFD163_50%,_#F7A200_100%)] shadow-[0_0_35px_rgba(255,208,99,0.45)]" />
+      <div
+        className="relative h-14 w-14 rounded-full shadow-[0_0_35px_rgba(255,208,99,0.45)]"
+        style={{
+          background:
+            "radial-gradient(circle at 35% 35%, #FFF9E5 0%, #FFD163 50%, #F7A200 100%)",
+        }}
+      />
     </div>
   );
 }
@@ -112,6 +139,7 @@ export default function AutumnGreetingCard() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
     if (!isAutumnTheme) {
       setPhase("hidden");
       return;
@@ -130,6 +158,7 @@ export default function AutumnGreetingCard() {
 
   useEffect(() => {
     if (phase !== "entering") return;
+
     const timer = window.setTimeout(() => setPhase("ready"), 420);
     return () => window.clearTimeout(timer);
   }, [phase]);
@@ -145,20 +174,17 @@ export default function AutumnGreetingCard() {
 
   const handleExited = () => setPhase("hidden");
 
-  if (!isReady || !isAutumnTheme || pathname !== "/" || phase === "hidden")
+  if (!isReady || !isAutumnTheme || pathname !== "/" || phase === "hidden") {
     return null;
+  }
 
-  const isVisible =
-    phase === "ready" ||
-    phase === "opening" ||
-    phase === "opened" ||
-    phase === "closing";
+  const isVisible = getGreetingPhase(phase);
 
   return (
     <AnimatePresence onExitComplete={handleExited}>
       {isVisible ? (
         <motion.div
-          className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-[rgba(12,4,4,0.72)] px-3 py-4 sm:px-4 sm:py-6"
+          className="fixed inset-0 z-9999 flex items-center justify-center overflow-y-auto bg-[rgba(12,4,4,0.72)] px-3 py-4 sm:px-4 sm:py-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: phase === "closing" ? 0 : 1 }}
           exit={{ opacity: 0 }}
@@ -195,7 +221,7 @@ export default function AutumnGreetingCard() {
           </div>
 
           <motion.div
-            className="relative w-full max-w-[560px] max-h-[calc(100vh-2rem)]"
+            className="relative max-h-[calc(100vh-2rem)] w-full max-w-140"
             initial={{ opacity: 0, scale: 0.92, y: 18 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -213,8 +239,8 @@ export default function AutumnGreetingCard() {
               }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-[#FFE4A0] to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-[#FFE4A0] to-transparent" />
+              <div className="absolute inset-x-0 top-0 h-0.5 bg-linear-to-r from-transparent via-[#FFE4A0] to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 h-0.5 bg-linear-to-r from-transparent via-[#FFE4A0] to-transparent" />
               <div className="absolute left-3 top-3 text-sm text-[#FFE4A0]/45">
                 ✦
               </div>
@@ -228,14 +254,7 @@ export default function AutumnGreetingCard() {
                 ✦
               </div>
 
-              <div
-                className="relative flex min-h-[320px] flex-col items-center justify-center rounded-[22px] border border-[#FFE4A0]/20 px-4 py-6 text-center text-[#FFF7D8] sm:min-h-[460px] sm:rounded-[24px] sm:px-8 sm:py-8"
-                style={{
-                  background:
-                    "linear-gradient(160deg, rgba(255,228,160,0.06), rgba(255,255,255,0.02))",
-                  backfaceVisibility: "hidden",
-                }}
-              >
+              <div className={cardShellClassName} style={cardSurfaceStyle}>
                 <MoonDecor />
                 <h2 className="text-[clamp(1.1rem,2.6vw,1.55rem)] font-semibold tracking-[0.2em] text-[#FFE4A0]">
                   🌕 Chúc Mừng Tết Trung Thu
@@ -248,18 +267,16 @@ export default function AutumnGreetingCard() {
                   type="button"
                   onClick={handleOpen}
                   whileTap={{ scale: 0.97 }}
-                  className="mt-7 rounded-full bg-[linear-gradient(135deg,#FFD86A_0%,#FFB800_100%)] px-6 py-3 text-sm font-semibold text-[#7B0000] shadow-[0_10px_30px_rgba(255,200,0,0.25)]"
+                  className={actionButtonClassName}
                 >
                   🎑 Mở thiệp
                 </motion.button>
               </div>
 
               <div
-                className="absolute inset-0 flex min-h-[320px] flex-col items-center justify-center rounded-[22px] border border-[#FFE4A0]/20 px-4 py-6 text-center text-[#FFF7D8] sm:min-h-[460px] sm:rounded-[24px] sm:px-8 sm:py-8"
+                className={`${cardShellClassName} absolute inset-0`}
                 style={{
-                  background:
-                    "linear-gradient(160deg, rgba(255,228,160,0.06), rgba(255,255,255,0.02))",
-                  backfaceVisibility: "hidden",
+                  ...cardSurfaceStyle,
                   transform: "rotateY(180deg)",
                 }}
               >
@@ -267,7 +284,7 @@ export default function AutumnGreetingCard() {
                 <h3 className="text-[clamp(1rem,2.4vw,1.35rem)] font-semibold tracking-[0.16em] text-[#FFE4A0]">
                   🌕 Chúc Mừng Tết Trung Thu
                 </h3>
-                <div className="mt-5 w-full max-w-[430px] max-h-[50vh] overflow-y-auto rounded-[20px] border border-[#FFE4A0]/20 bg-[#5b0a0a]/60 px-4 py-5 text-left shadow-[inset_0_1px_0_rgba(255,228,160,0.08)] sm:px-6">
+                <div className="mt-5 max-h-[50vh] w-full max-w-107.5 overflow-y-auto rounded-[20px] border border-[#FFE4A0]/20 bg-[#5b0a0a]/60 px-4 py-5 text-left shadow-[inset_0_1px_0_rgba(255,228,160,0.08)] sm:px-6">
                   {messageLines.map((line, index) => (
                     <p
                       key={line}
@@ -282,7 +299,7 @@ export default function AutumnGreetingCard() {
                   type="button"
                   onClick={handleContinue}
                   whileTap={{ scale: 0.97 }}
-                  className="mt-7 rounded-full bg-[linear-gradient(135deg,#FFD86A_0%,#FFB800_100%)] px-6 py-3 text-sm font-semibold text-[#7B0000] shadow-[0_10px_30px_rgba(255,200,0,0.25)]"
+                  className={actionButtonClassName}
                 >
                   🛍️ Tiếp tục mua sắm
                 </motion.button>

@@ -23,15 +23,44 @@ function getStoredThemeId() {
 
 function ThemeSplash() {
   return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-[var(--theme-background,#FFF8FB)] text-[var(--theme-text,#2D3748)]">
+    <div className="fixed inset-0 z-10000 flex items-center justify-center bg-(--theme-background,#FFF8FB) text-(--theme-text,#2D3748)">
       <div className="flex flex-col items-center gap-3">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--theme-primary,#F7A3A9)] border-t-transparent" />
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-(--theme-primary,#F7A3A9) border-t-transparent" />
         <p className="text-sm font-semibold uppercase tracking-[0.3em]">
           Đang tải giao diện
         </p>
       </div>
     </div>
   );
+}
+
+function applyThemeVariables(theme) {
+  if (typeof document === "undefined") return;
+
+  const root = document.documentElement;
+  const values = theme?.values || {};
+  const variableMap = {
+    "--theme-primary": values.primary || "#F7A3A9",
+    "--theme-secondary": values.secondary || "#F08A91",
+    "--theme-background": values.background || "#FFF8FB",
+    "--theme-section-background": values.sectionBackground || "#FFF3F4",
+    "--theme-text": values.text || "#2D3748",
+    "--theme-button-background": values.buttonBackground || "#F7A3A9",
+    "--theme-button-text": values.buttonText || "#FFFFFF",
+    "--theme-card-background": values.cardBackground || "#FFFFFF",
+    "--theme-card-border": values.cardBorder || "#F7D0D3",
+    "--theme-border-radius": values.borderRadius || "24px",
+    "--theme-shadow": values.shadow || "0 20px 60px rgba(247, 163, 169, 0.12)",
+    "--theme-font": values.fontFamily || "var(--font-koni), sans-serif",
+  };
+
+  Object.entries(variableMap).forEach(([name, value]) => {
+    root.style.setProperty(name, value);
+  });
+}
+
+function getResolvedThemeId(currentThemeId) {
+  return currentThemeId || DEFAULT_THEME_ID;
 }
 
 export function ThemeProvider({ children }) {
@@ -41,59 +70,20 @@ export function ThemeProvider({ children }) {
   useLayoutEffect(() => {
     if (typeof window === "undefined") return;
 
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    const resolvedThemeId = stored || DEFAULT_THEME_ID;
+    const storedThemeId = window.localStorage.getItem(THEME_STORAGE_KEY);
+    const resolvedThemeId = storedThemeId || DEFAULT_THEME_ID;
+
     setCurrentThemeId(resolvedThemeId);
     setIsThemeReady(true);
   }, []);
 
-  const resolvedThemeId = currentThemeId || DEFAULT_THEME_ID;
+  const resolvedThemeId = getResolvedThemeId(currentThemeId);
   const theme = useMemo(() => getThemeById(resolvedThemeId), [resolvedThemeId]);
 
   useLayoutEffect(() => {
-    if (!isThemeReady || typeof document === "undefined") return;
+    if (!isThemeReady) return;
 
-    const root = document.documentElement;
-    const values = theme?.values || {};
-    root.style.setProperty("--theme-primary", values.primary || "#F7A3A9");
-    root.style.setProperty("--theme-secondary", values.secondary || "#F08A91");
-    root.style.setProperty(
-      "--theme-background",
-      values.background || "#FFF8FB",
-    );
-    root.style.setProperty(
-      "--theme-section-background",
-      values.sectionBackground || "#FFF3F4",
-    );
-    root.style.setProperty("--theme-text", values.text || "#2D3748");
-    root.style.setProperty(
-      "--theme-button-background",
-      values.buttonBackground || "#F7A3A9",
-    );
-    root.style.setProperty(
-      "--theme-button-text",
-      values.buttonText || "#FFFFFF",
-    );
-    root.style.setProperty(
-      "--theme-card-background",
-      values.cardBackground || "#FFFFFF",
-    );
-    root.style.setProperty(
-      "--theme-card-border",
-      values.cardBorder || "#F7D0D3",
-    );
-    root.style.setProperty(
-      "--theme-border-radius",
-      values.borderRadius || "24px",
-    );
-    root.style.setProperty(
-      "--theme-shadow",
-      values.shadow || "0 20px 60px rgba(247, 163, 169, 0.12)",
-    );
-    root.style.setProperty(
-      "--theme-font",
-      values.fontFamily || "var(--font-koni), sans-serif",
-    );
+    applyThemeVariables(theme);
   }, [isThemeReady, theme]);
 
   const applyTheme = (themeId) => {
@@ -103,30 +93,26 @@ export function ThemeProvider({ children }) {
     }
   };
 
+  const providerValue = useMemo(
+    () => ({
+      currentThemeId: resolvedThemeId,
+      theme,
+      applyTheme,
+      isThemeReady,
+    }),
+    [resolvedThemeId, theme, isThemeReady],
+  );
+
   if (!isThemeReady) {
     return (
-      <ThemeContext.Provider
-        value={{
-          currentThemeId: resolvedThemeId,
-          theme,
-          applyTheme,
-          isThemeReady,
-        }}
-      >
+      <ThemeContext.Provider value={providerValue}>
         <ThemeSplash />
       </ThemeContext.Provider>
     );
   }
 
   return (
-    <ThemeContext.Provider
-      value={{
-        currentThemeId: resolvedThemeId,
-        theme,
-        applyTheme,
-        isThemeReady,
-      }}
-    >
+    <ThemeContext.Provider value={providerValue}>
       {children}
     </ThemeContext.Provider>
   );
