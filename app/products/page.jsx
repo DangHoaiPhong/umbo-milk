@@ -41,30 +41,50 @@ const CATEGORIES_TRUNG_THU = [
   { label: "Đồ Chơi & Đèn Lồng", values: ["Đèn Lồng & Đồ Chơi"] },
 ];
 
-const STORES = [
-  { label: "CN 1: 111 Tôn Đản, Quận 4", key: "CN1" },
-  { label: "CN 2: 120 Hoàng Diệu 2, Quận Thủ Đức", key: "CN2" },
-  { label: "CN 3: 261 Tô Hiến Thành, Quận 10", key: "CN3" },
-  { label: "CN 4: 130 Vạn Kiếp, Quận Bình Thạnh", key: "CN4" },
-];
+const STORES = [];
+// STORES sẽ được load động từ API — xem useEffect bên dưới
 
 const PAGE_SIZE = 8;
 const DEFAULT_CATEGORIES = ["sua", "vang-sua", "do-an-vat", "Sữa", "Váng sữa"];
 
-function filterProducts(products, selectedCategoryKeys, stores, allCategories) {
+// ─── Filter theo danh mục ─────────────────────────────────────────────────────
+function filterByCategory(products, selectedCategoryKeys, allCategories) {
   const allValues =
     selectedCategoryKeys.length > 0
       ? selectedCategoryKeys.flatMap(
           (key) => allCategories.find((c) => c.label === key)?.values ?? [key],
         )
       : DEFAULT_CATEGORIES;
+  return products.filter((p) => allValues.includes(p.category));
+}
 
-  return products.filter((p) => {
-    const categoryMatch = allValues.includes(p.category);
-    const storeMatch =
-      stores.length === 0 || p.stores?.some((s) => stores.includes(s));
-    return categoryMatch && storeMatch;
-  });
+// ─── Filter theo chi nhánh + gắn displayLocations ────────────────────────────
+/**
+ * Trả về products đã lọc, mỗi product có thêm displayLocations:
+ *   - Nếu không chọn chi nhánh: displayLocations = tất cả locations còn hàng
+ *   - Nếu có chọn: displayLocations = chỉ các chi nhánh được chọn VÀ còn hàng
+ */
+function filterProductsByLocations(products, selectedLocationIds) {
+  return products
+    .map((p) => {
+      const locs = p.locations ?? [];
+
+      // Không chọn chi nhánh → hiển thị tất cả còn hàng
+      if (selectedLocationIds.length === 0) {
+        return { ...p, displayLocations: locs.filter((l) => l.quantity > 0) };
+      }
+
+      // Lọc ra các chi nhánh được chọn VÀ còn hàng
+      const matched = locs.filter(
+        (l) => selectedLocationIds.includes(l.id) && l.quantity > 0
+      );
+
+      // Sản phẩm không có ở bất kỳ chi nhánh nào được chọn → loại bỏ
+      if (matched.length === 0) return null;
+
+      return { ...p, displayLocations: matched };
+    })
+    .filter(Boolean);
 }
 
 function AccordionGroup({ title, items, checked, onChange, t }) {
@@ -140,10 +160,11 @@ function AccordionGroup({ title, items, checked, onChange, t }) {
 
 export default function ProductsPage() {
   const [apiProducts, setApiProducts] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedStores, setSelectedStores] = useState([]);
+  const [selectedLocations, setSelectedLocations] = useState([]);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const newStartRef = useRef(0);
   const { theme } = useTheme();
@@ -153,10 +174,17 @@ export default function ProductsPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch("/api/haravan/products");
-        if (!res.ok) throw new Error(`Lỗi ${res.status}`);
-        const data = await res.json();
-        setApiProducts(Array.isArray(data) ? data : []);
+        const [prodRes, locRes] = await Promise.all([
+          fetch("/api/haravan/products"),
+          fetch("/api/haravan/locations"),
+        ]);
+        if (!prodRes.ok) throw new Error(`Lỗi ${prodRes.status}`);
+        const [prodData, locData] = await Promise.all([
+          prodRes.json(),
+          locRes.ok ? locRes.json() : Promise.resolve([]),
+        ]);
+        setApiProducts(Array.isArray(prodData) ? prodData : []);
+        setLocations(Array.isArray(locData) ? locData : []);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -192,24 +220,18 @@ export default function ProductsPage() {
 
   const resetFilters = () => {
     setSelectedCategories([]);
-    setSelectedStores([]);
+    setSelectedLocations([]);
   };
 
-  const filteredProducts = useMemo(
-    () =>
-      filterProducts(
-        products,
-        selectedCategories,
-        selectedStores,
-        allCategories,
-      ),
-    [products, selectedCategories, selectedStores, isMidAutumn],
-  );
+  const filteredProducts = useMemo(() => {
+    const byCategory = filterByCategory(products, selectedCategories, allCategories);
+    return filterProductsByLocations(byCategory, selectedLocations);
+  }, [products, selectedCategories, selectedLocations, isMidAutumn]);
 
   useEffect(() => {
     newStartRef.current = 0;
     setVisibleCount(PAGE_SIZE);
-  }, [selectedCategories, selectedStores]);
+  }, [selectedCategories, selectedLocations]);
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = visibleCount < filteredProducts.length;
@@ -267,10 +289,10 @@ export default function ProductsPage() {
                 />
               )}
               <AccordionGroup
-                title="Các cửa hàng"
-                items={STORES}
-                checked={selectedStores}
-                onChange={toggle(setSelectedStores)}
+                title="Chi nhánh"
+                items={locations.map((l) => ({ key: l.id, label: l.name }))}
+                checked={selectedLocations}
+                onChange={toggle(setSelectedLocations)}
                 t={t}
               />
             </div>
@@ -292,7 +314,10 @@ export default function ProductsPage() {
                       : undefined
                   }
                 >
-                  <ProductCard product={product} />
+                  <ProductCard
+                    product={product}
+                    displayLocations={product.displayLocations}
+                  />
                 </div>
               ))}
             </div>
@@ -317,7 +342,7 @@ export default function ProductsPage() {
                   Không tìm thấy sản phẩm phù hợp.
                 </p>
                 {(selectedCategories.length > 0 ||
-                  selectedStores.length > 0) && (
+                  selectedLocations.length > 0) && (
                   <button
                     onClick={resetFilters}
                     className="mt-1 px-6 py-2 text-sm font-semibold rounded-full transition-colors"

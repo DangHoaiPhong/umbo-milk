@@ -1,313 +1,373 @@
 "use client";
-
-import { AnimatePresence, motion } from "framer-motion";
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 
-const AUTUMN_THEME_IDS = ["autumn", "trung-thu"];
-const STORAGE_KEY = "autumnGreetingViewed";
-
-const messageLines = [
-  "Cảm ơn bạn đã ghé thăm UmBo Milk.",
-  "Nhân dịp Tết Trung Thu, UmBo Milk kính chúc bạn và gia đình luôn mạnh khỏe, bình an, hạnh phúc và có một mùa đoàn viên trọn vẹn.",
-  "Hy vọng những sản phẩm của UmBo Milk sẽ góp phần mang đến những khoảnh khắc ngọt ngào bên gia đình và người thân.",
-  "🌕 Chúc bạn một mùa Trung Thu an lành, ấm áp và tràn đầy niềm vui.",
-];
-
-const sparkles = Array.from({ length: 16 }, (_, index) => ({
-  id: index,
-  left: `${(index * 7 + 6) % 100}%`,
-  top: `${(index * 13 + 3) % 100}%`,
-  size: [10, 12, 14][index % 3],
-  delay: `${(index % 5) * 0.35}s`,
-  duration: `${2.6 + (index % 4) * 0.5}s`,
-}));
-
-const cardSurfaceStyle = {
-  background:
-    "linear-gradient(160deg, rgba(255,228,160,0.06), rgba(255,255,255,0.02))",
-  backfaceVisibility: "hidden",
+// ─── Config ───────────────────────────────────────────────────────────────────
+const CONFIG = {
+  themeId: "trung-thu",
+  storageKey: "autumnGreetingViewed_v2",
 };
 
-const cardShellClassName =
-  "relative flex min-h-[320px] flex-col items-center justify-center rounded-[22px] border border-[#FFE4A0]/20 px-4 py-6 text-center text-[#FFF7D8] sm:min-h-[460px] sm:rounded-[24px] sm:px-8 sm:py-8";
+// ─── Static particles (tránh random mỗi lần render) ──────────────────────────
+const PARTICLES = [
+  { x: 8, y: 12, s: 2.5, dur: 3.2, del: 0 },
+  { x: 18, y: 78, s: 1.5, dur: 2.8, del: 0.5 },
+  { x: 28, y: 35, s: 2, dur: 3.6, del: 1.1 },
+  { x: 42, y: 88, s: 1.5, dur: 2.5, del: 0.3 },
+  { x: 55, y: 20, s: 3, dur: 4, del: 0.8 },
+  { x: 65, y: 60, s: 1.5, dur: 3, del: 1.5 },
+  { x: 75, y: 42, s: 2, dur: 2.7, del: 0.2 },
+  { x: 88, y: 15, s: 2.5, dur: 3.4, del: 0.9 },
+  { x: 92, y: 72, s: 1.5, dur: 2.9, del: 1.3 },
+  { x: 35, y: 55, s: 2, dur: 3.1, del: 0.6 },
+  { x: 50, y: 5, s: 1.5, dur: 3.8, del: 1.7 },
+  { x: 82, y: 90, s: 2, dur: 2.6, del: 0.4 },
+];
 
-const actionButtonClassName =
-  "mt-7 rounded-full bg-[linear-gradient(135deg,#FFD86A_0%,#FFB800_100%)] px-6 py-3 text-sm font-semibold text-[#7B0000] shadow-[0_10px_30px_rgba(255,200,0,0.25)]";
-
-function getGreetingPhase(phase) {
+// ─── Lantern SVG ──────────────────────────────────────────────────────────────
+function Lantern({ w = 36, opacity = 1 }) {
+  const h = Math.round(w * 1.55);
   return (
-    phase === "ready" ||
-    phase === "opening" ||
-    phase === "opened" ||
-    phase === "closing"
-  );
-}
-
-function MoonDecor() {
-  return (
-    <div className="relative mx-auto mb-5 flex h-20 w-20 items-center justify-center">
-      <div className="absolute inset-0 rounded-full bg-[#FFE8A8] opacity-25 blur-xl" />
-      <div className="absolute inset-2 rounded-full border border-[#FFE8A8]/40" />
-      <div
-        className="relative h-14 w-14 rounded-full shadow-[0_0_35px_rgba(255,208,99,0.45)]"
-        style={{
-          background:
-            "radial-gradient(circle at 35% 35%, #FFF9E5 0%, #FFD163 50%, #F7A200 100%)",
-        }}
-      />
-    </div>
-  );
-}
-
-function LanternDecor({ className, delay }) {
-  return (
-    <motion.div
-      className={className}
-      initial={{ rotate: -6 }}
-      animate={{ rotate: [-6, 6, -6] }}
-      transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay }}
-      style={{ transformOrigin: "top center" }}
+    <svg
+      width={w}
+      height={h}
+      viewBox="0 0 36 56"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ opacity }}
     >
-      <svg
-        viewBox="0 0 48 70"
-        className="h-14 w-12 sm:h-16 sm:w-14"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <rect x="10" y="10" width="28" height="40" rx="12" fill="#D94B3D" />
-        <rect
-          x="10"
-          y="10"
-          width="28"
-          height="40"
-          rx="12"
-          fill="url(#lanternGlow)"
-          opacity="0.7"
-        />
-        <line x1="24" y1="5" x2="24" y2="12" stroke="#FFE4A0" strokeWidth="2" />
-        <line
-          x1="14"
-          y1="28"
-          x2="34"
-          y2="28"
-          stroke="#FFE4A0"
-          strokeOpacity="0.5"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M16 50L14 60"
-          stroke="#FFD76B"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M32 50L34 60"
-          stroke="#FFD76B"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-        <defs>
-          <linearGradient
-            id="lanternGlow"
-            x1="10"
-            y1="10"
-            x2="38"
-            y2="50"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop offset="0%" stopColor="#FFF1B9" />
-            <stop offset="100%" stopColor="#D94B3D" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-      </svg>
-    </motion.div>
+      {/* string */}
+      <line x1="18" y1="0" x2="18" y2="7" stroke="#FFE4A0" strokeWidth="1.2" />
+      {/* top cap */}
+      <ellipse cx="18" cy="8" rx="7" ry="2.5" fill="#D4A017" />
+      {/* body */}
+      <path
+        d="M6 10 Q4 28 6 44 Q12 50 18 50 Q24 50 30 44 Q32 28 30 10 Z"
+        fill="#C0392B"
+      />
+      {/* inner glow */}
+      <path
+        d="M6 10 Q4 28 6 44 Q12 50 18 50 Q24 50 30 44 Q32 28 30 10 Z"
+        fill="url(#lGlow)"
+      />
+      {/* ribs */}
+      <line
+        x1="6"
+        y1="22"
+        x2="30"
+        y2="22"
+        stroke="#FFE4A0"
+        strokeWidth="0.6"
+        opacity="0.4"
+      />
+      <line
+        x1="5"
+        y1="32"
+        x2="31"
+        y2="32"
+        stroke="#FFE4A0"
+        strokeWidth="0.6"
+        opacity="0.4"
+      />
+      {/* bottom cap */}
+      <ellipse cx="18" cy="44" rx="7" ry="2.5" fill="#D4A017" />
+      {/* tassels */}
+      <line x1="14" y1="46" x2="12" y2="54" stroke="#FFD700" strokeWidth="1" />
+      <line x1="18" y1="46" x2="18" y2="56" stroke="#FFD700" strokeWidth="1" />
+      <line x1="22" y1="46" x2="24" y2="54" stroke="#FFD700" strokeWidth="1" />
+      <defs>
+        <radialGradient id="lGlow" cx="40%" cy="40%">
+          <stop offset="0%" stopColor="#FFE4A0" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#C0392B" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+    </svg>
   );
 }
 
+// ─── Main Component ────────────────────────────────────────────────────────────
+// phase: hidden | visible | flipping | opened | leaving
 export default function AutumnGreetingCard() {
-  const pathname = usePathname();
   const { currentThemeId } = useTheme();
   const [phase, setPhase] = useState("hidden");
-  const [isReady, setIsReady] = useState(false);
+  const backdropRef = useRef(null);
+  // dùng path tĩnh để tránh vấn đề next/image fill trong context 3D
 
-  const isAutumnTheme = useMemo(
-    () => AUTUMN_THEME_IDS.includes(currentThemeId),
-    [currentThemeId],
-  );
-
+  // Kiểm tra điều kiện hiển thị
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (currentThemeId !== CONFIG.themeId) return;
+    if (localStorage.getItem(CONFIG.storageKey)) return;
+    const t = setTimeout(() => setPhase("visible"), 100);
+    return () => clearTimeout(t);
+  }, [currentThemeId]);
 
-    if (!isAutumnTheme) {
-      setPhase("hidden");
-      return;
-    }
-
-    const alreadyViewed = window.localStorage.getItem(STORAGE_KEY) === "true";
-    if (alreadyViewed) {
-      setPhase("hidden");
-      return;
-    }
-
-    setIsReady(true);
-    const timer = window.setTimeout(() => setPhase("entering"), 120);
-    return () => window.clearTimeout(timer);
-  }, [isAutumnTheme]);
-
-  useEffect(() => {
-    if (phase !== "entering") return;
-
-    const timer = window.setTimeout(() => setPhase("ready"), 420);
-    return () => window.clearTimeout(timer);
-  }, [phase]);
-
-  const handleOpen = () => setPhase("opening");
-
-  const handleContinue = () => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, "true");
-    }
-    setPhase("closing");
+  const handleOpen = () => {
+    setPhase("flipping");
+    setTimeout(() => setPhase("opened"), 750);
   };
 
-  const handleExited = () => setPhase("hidden");
+  const handleSkip = () => dismiss();
+  const handleContinue = () => dismiss();
 
-  if (!isReady || !isAutumnTheme || pathname !== "/" || phase === "hidden") {
-    return null;
-  }
+  const dismiss = () => {
+    localStorage.setItem(CONFIG.storageKey, "true");
+    setPhase("leaving");
+  };
 
-  const isVisible = getGreetingPhase(phase);
+  if (phase === "hidden") return null;
+
+  const isLeaving = phase === "leaving";
+  const isFlipping = phase === "flipping";
+  const isOpened = phase === "opened";
+  const showContent = isFlipping || isOpened;
 
   return (
-    <AnimatePresence onExitComplete={handleExited}>
-      {isVisible ? (
-        <motion.div
-          className="fixed inset-0 z-9999 flex items-center justify-center overflow-y-auto bg-[rgba(12,4,4,0.72)] px-3 py-4 sm:px-4 sm:py-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: phase === "closing" ? 0 : 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
-          style={{ backdropFilter: "blur(8px)" }}
-        >
-          {sparkles.map((sparkle) => (
-            <motion.span
-              key={sparkle.id}
-              className="pointer-events-none absolute rounded-full bg-[#FFE4A0]"
-              style={{
-                left: sparkle.left,
-                top: sparkle.top,
-                width: sparkle.size,
-                height: sparkle.size,
-                boxShadow: "0 0 14px rgba(255,228,160,0.35)",
-              }}
-              initial={{ opacity: 0.15, scale: 0.8 }}
-              animate={{ opacity: [0.15, 0.6, 0.15], scale: [0.8, 1.25, 0.8] }}
-              transition={{
-                duration: Number(sparkle.duration.replace("s", "")),
-                repeat: Infinity,
-                delay: sparkle.delay,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
+    <>
+      <style>{`
+        @keyframes ag-sway {
+          0%,100% { transform: rotate(-7deg) translateX(0); }
+          50%      { transform: rotate(7deg)  translateX(0); }
+        }
+        @keyframes ag-twinkle {
+          0%,100% { opacity:.12; transform:scale(1);   }
+          50%      { opacity:.6;  transform:scale(1.5); }
+        }
+        @keyframes ag-moonpulse {
+          0%,100% { box-shadow: 0 0 24px 8px rgba(255,228,160,.18); }
+          50%      { box-shadow: 0 0 48px 18px rgba(255,228,160,.32); }
+        }
+        @keyframes ag-fadein {
+          from { opacity:0; transform:translateY(12px); }
+          to   { opacity:1; transform:translateY(0);    }
+        }
+        .ag-sway      { animation: ag-sway 3.2s ease-in-out infinite; transform-origin: top center; }
+        .ag-twinkle   { animation: ag-twinkle var(--dur,3s) var(--del,0s) ease-in-out infinite; }
+        .ag-moonpulse { animation: ag-moonpulse 3s ease-in-out infinite; }
+        .ag-fadein    { animation: ag-fadein .5s cubic-bezier(.22,1,.36,1) both; }
 
-          <div className="absolute left-[8%] top-4 hidden sm:block">
-            <LanternDecor className="opacity-80" delay={0.1} />
-          </div>
-          <div className="absolute right-[8%] top-4 hidden sm:block">
-            <LanternDecor className="opacity-70" delay={0.35} />
-          </div>
+        /* 3-D flip */
+        .ag-scene       { perspective: 1200px; }
+        .ag-card-inner  {
+          position: relative;
+          width: 100%; height: 100%;
+          transform-style: preserve-3d;
+          transition: transform .75s cubic-bezier(.4,0,.2,1);
+        }
+        .ag-card-inner.flipped { transform: rotateY(-180deg); }
+        .ag-face {
+          position: absolute; inset: 0;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          border-radius: 20px;
+          overflow: hidden;
+        }
+        .ag-back { transform: rotateY(180deg); }
+      `}</style>
 
-          <motion.div
-            className="relative max-h-[calc(100vh-2rem)] w-full max-w-140"
-            initial={{ opacity: 0, scale: 0.92, y: 18 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      {/* ── Backdrop ── */}
+      <div
+        ref={backdropRef}
+        className="fixed inset-0 z-[9999] flex items-center justify-center"
+        style={{
+          background: "rgba(10,2,2,.88)",
+          backdropFilter: "blur(4px)",
+          transition: "opacity .45s ease",
+          opacity: isLeaving ? 0 : 1,
+          padding: "clamp(12px,3vw,32px)",
+        }}
+        onTransitionEnd={() => {
+          if (isLeaving) setPhase("hidden");
+        }}
+      >
+        {/* ── Particles ── */}
+        {PARTICLES.map((p, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-[#FFE4A0] ag-twinkle pointer-events-none"
+            style={{
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              width: p.s,
+              height: p.s,
+              "--dur": `${p.dur}s`,
+              "--del": `${p.del}s`,
+            }}
+          />
+        ))}
+
+        {/* ── Moon (top-center) ── */}
+        <div
+          className="absolute ag-moonpulse pointer-events-none rounded-full"
+          style={{
+            top: "clamp(10px,3vh,28px)",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "clamp(44px,6vw,64px)",
+            height: "clamp(44px,6vw,64px)",
+            background:
+              "radial-gradient(circle at 38% 36%, #FFF8DC, #FFD700 55%, #FFB800)",
+            boxShadow: "0 0 24px 8px rgba(255,228,160,.18)",
+          }}
+        />
+
+        {/* ── Lanterns ── */}
+        {[
+          { left: "4%", delay: "0s", w: 38, op: 0.9 },
+          { right: "4%", delay: ".9s", w: 34, op: 0.85 },
+          { left: "22%", delay: "1.5s", w: 26, op: 0.6, hide: true },
+          { right: "20%", delay: ".4s", w: 28, op: 0.65, hide: true },
+        ].map(({ hide, delay, w, op, ...pos }, i) => (
+          <div
+            key={i}
+            className={`absolute top-0 ag-sway pointer-events-none${hide ? " hidden sm:block" : ""}`}
+            style={{ ...pos, animationDelay: delay }}
           >
-            <motion.div
-              className="relative w-full rounded-[26px] border border-[#FFE4A0]/35 p-3 shadow-[0_24px_80px_rgba(0,0,0,0.5)] sm:rounded-[30px] sm:p-6"
-              style={{
-                background:
-                  "linear-gradient(145deg, #5f0a0a 0%, #8b0000 48%, #6d0d0d 100%)",
-                transformStyle: "preserve-3d",
-                perspective: 1600,
-              }}
-              animate={{
-                rotateY: phase === "opening" || phase === "opened" ? 180 : 0,
-              }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <div className="absolute inset-x-0 top-0 h-0.5 bg-linear-to-r from-transparent via-[#FFE4A0] to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 h-0.5 bg-linear-to-r from-transparent via-[#FFE4A0] to-transparent" />
-              <div className="absolute left-3 top-3 text-sm text-[#FFE4A0]/45">
-                ✦
-              </div>
-              <div className="absolute right-3 top-3 text-sm text-[#FFE4A0]/45">
-                ✦
-              </div>
-              <div className="absolute bottom-3 left-3 text-sm text-[#FFE4A0]/45">
-                ✦
-              </div>
-              <div className="absolute bottom-3 right-3 text-sm text-[#FFE4A0]/45">
-                ✦
+            <Lantern w={w} opacity={op} />
+          </div>
+        ))}
+
+        {/* ── Wrapper: thiệp + nút CTA bên dưới ── */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 0,
+            width: "min(92vw, 480px)",
+          }}
+        >
+          {/* ── Card scene ── */}
+          <div
+            className="ag-scene"
+            style={{ width: "100%", height: "min(88vh, 680px)" }}
+          >
+            <div className={`ag-card-inner${showContent ? " flipped" : ""}`}>
+              {/* ══ FRONT — bìa thiệp ══ */}
+              <div className="ag-face ag-front">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/cover.png"
+                  alt="Thiệp Trung Thu UmBo Milk"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    width: "auto",
+                    height: "auto",
+                    display: "block",
+                  }}
+                />
               </div>
 
-              <div className={cardShellClassName} style={cardSurfaceStyle}>
-                <MoonDecor />
-                <h2 className="text-[clamp(1.1rem,2.6vw,1.55rem)] font-semibold tracking-[0.2em] text-[#FFE4A0]">
-                  🌕 Chúc Mừng Tết Trung Thu
-                </h2>
-                <p className="mt-3 text-sm text-[#FFDDA9]/80 sm:text-[15px]">
-                  Nhấn để mở thiệp chúc mừng của bạn
-                </p>
-
-                <motion.button
-                  type="button"
-                  onClick={handleOpen}
-                  whileTap={{ scale: 0.97 }}
-                  className={actionButtonClassName}
-                >
-                  🎑 Mở thiệp
-                </motion.button>
+              {/* ══ BACK — nội dung thiệp ══ */}
+              <div className="ag-face ag-back">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/descriptions.png"
+                  alt="Nội dung thiệp Trung Thu UmBo Milk"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    width: "auto",
+                    height: "auto",
+                    display: "block",
+                  }}
+                />
               </div>
+            </div>
+          </div>
 
-              <div
-                className={`${cardShellClassName} absolute inset-0`}
+          {/* ── CTA footer — nằm ngoài thiệp, không đè lên ảnh ── */}
+          {phase === "visible" && (
+            <div className="flex flex-col items-center gap-3 w-full ag-fadein">
+              <button
+                onClick={handleOpen}
                 style={{
-                  ...cardSurfaceStyle,
-                  transform: "rotateY(180deg)",
+                  background: "linear-gradient(135deg,#FFD700,#FFB800)",
+                  color: "#7B0000",
+                  border: "2px solid #D4A017",
+                  borderRadius: 999,
+                  padding: "13px 40px",
+                  fontWeight: 700,
+                  fontSize: "clamp(14px,2.5vw,16px)",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 18px rgba(255,200,0,.35)",
+                  letterSpacing: ".04em",
+                  transition: "transform .2s, box-shadow .2s",
+                  maxWidth: 260,
+                  width: "100%",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 28px rgba(255,200,0,.55)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 18px rgba(255,200,0,.35)";
+                }}
+                onMouseDown={(e) => {
+                  e.currentTarget.style.transform = "scale(0.97)";
+                }}
+                onMouseUp={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
                 }}
               >
-                <MoonDecor />
-                <h3 className="text-[clamp(1rem,2.4vw,1.35rem)] font-semibold tracking-[0.16em] text-[#FFE4A0]">
-                  🌕 Chúc Mừng Tết Trung Thu
-                </h3>
-                <div className="mt-5 max-h-[50vh] w-full max-w-107.5 overflow-y-auto rounded-[20px] border border-[#FFE4A0]/20 bg-[#5b0a0a]/60 px-4 py-5 text-left shadow-[inset_0_1px_0_rgba(255,228,160,0.08)] sm:px-6">
-                  {messageLines.map((line, index) => (
-                    <p
-                      key={line}
-                      className={`text-sm leading-7 text-[#FFEFD2] sm:text-[15px] ${index === messageLines.length - 1 ? "mt-3 font-medium italic text-[#FFE4A0]" : "mt-2"}`}
-                    >
-                      {line}
-                    </p>
-                  ))}
-                </div>
+                🎑 Mở thiệp
+              </button>
+            </div>
+          )}
 
-                <motion.button
-                  type="button"
-                  onClick={handleContinue}
-                  whileTap={{ scale: 0.97 }}
-                  className={actionButtonClassName}
-                >
-                  🛍️ Tiếp tục mua sắm
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
+          {isOpened && (
+            <div className="flex justify-center w-full ag-fadein">
+              <button
+                onClick={handleContinue}
+                style={{
+                  background: "linear-gradient(135deg,#FFD700,#FFB800)",
+                  color: "#7B0000",
+                  border: "2px solid #D4A017",
+                  borderRadius: 999,
+                  padding: "13px 40px",
+                  fontWeight: 700,
+                  fontSize: "clamp(14px,2.5vw,16px)",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 18px rgba(255,200,0,.35)",
+                  letterSpacing: ".04em",
+                  transition: "transform .2s, box-shadow .2s",
+                  maxWidth: 280,
+                  width: "100%",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 8px 28px rgba(255,200,0,.55)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 18px rgba(255,200,0,.35)";
+                }}
+                onMouseDown={(e) => {
+                  e.currentTarget.style.transform = "scale(0.97)";
+                }}
+                onMouseUp={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+              >
+                🛍️ Tiếp tục mua sắm
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   );
 }

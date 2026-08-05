@@ -7,6 +7,7 @@ import { ShoppingCart, Minus, Plus, ChevronDown } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/components/CartContext";
 import { useTheme } from "@/components/ThemeProvider";
+import LocationBadge from "@/components/LocationBadge";
 
 const defaultTokens = {
   bg: "#fff3f4",
@@ -238,6 +239,16 @@ export default function ProductDetailPage() {
                 </span>
               )}
             </div>
+
+            {/* Tồn kho theo chi nhánh */}
+            {product.locations?.length > 0 && (
+              <LocationBadge
+                locations={product.locations}
+                mode="detail"
+                textColor={t.metaColor}
+                accentColor={t.priceColor}
+              />
+            )}
 
             {/* Volume */}
             {product.volume && (

@@ -5,8 +5,9 @@ import { ShoppingCart } from "lucide-react";
 import { useQuickView } from "./QuickViewContext";
 import { useCart } from "./CartContext";
 import { useTheme } from "@/components/ThemeProvider";
+import LocationBadge from "@/components/LocationBadge";
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, displayLocations }) => {
   const { id, name, volume, price, oldPrice, discount, isNew, image } = product;
   const { open } = useQuickView();
   const { addToCart } = useCart();
@@ -141,6 +142,14 @@ const ProductCard = ({ product }) => {
               <ShoppingCart className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Tồn kho theo chi nhánh */}
+          <LocationBadge
+            locations={displayLocations ?? product.locations}
+            mode="card"
+            textColor={volumeColor}
+            accentColor={priceColor}
+          />
         </div>
       </div>
     </Link>
