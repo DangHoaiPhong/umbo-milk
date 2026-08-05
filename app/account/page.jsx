@@ -21,6 +21,12 @@ import ThemeSettings from "@/components/ThemeSettings";
 
 const ACCOUNT_STORAGE_KEY = "umbo_account_profile";
 
+const ADMIN_EMAILS = ["admin@umbo.vn"];
+
+function resolveIsOwner(profile) {
+  return ADMIN_EMAILS.includes((profile?.email ?? "").toLowerCase().trim());
+}
+
 const initialProfile = {
   name: "Khách hàng Umbo",
   email: "",
@@ -93,7 +99,9 @@ export default function AccountPage() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        setProfile({ ...initialProfile, ...parsed });
+        const merged = { ...initialProfile, ...parsed };
+        // isOwner luôn được tính lại từ email, không tin vào giá trị lưu trong storage
+        setProfile({ ...merged, isOwner: resolveIsOwner(merged) });
       } catch {
         setProfile(initialProfile);
       }
@@ -152,6 +160,8 @@ export default function AccountPage() {
       [editor.field]:
         editor.field === "name" ? editor.value.trim() : editor.value,
     };
+    // Tính lại isOwner nếu email thay đổi
+    nextProfile.isOwner = resolveIsOwner(nextProfile);
     setProfile(nextProfile);
     if (typeof window !== "undefined")
       window.localStorage.setItem(
