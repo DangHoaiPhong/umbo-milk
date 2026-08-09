@@ -35,6 +35,8 @@ const defaultTokens = {
   successColor: "#22c55e",
 };
 
+const ADMIN_EMAILS = ["admin@umbo.com", "admin@umbo.vn"];
+
 const LoginDrawer = ({ open, onClose, triggerRef, onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [view, setView] = useState("login");
@@ -107,7 +109,8 @@ const LoginDrawer = ({ open, onClose, triggerRef, onLogin }) => {
       return;
     }
 
-    const isAdmin = trimmedEmail.toLowerCase() === "admin@umbo.vn";
+    const normalizedEmail = trimmedEmail.toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(normalizedEmail);
 
     onLogin?.({
       name: isAdmin

@@ -21,7 +21,7 @@ import ThemeSettings from "@/components/ThemeSettings";
 
 const ACCOUNT_STORAGE_KEY = "umbo_account_profile";
 
-const ADMIN_EMAILS = ["admin@umbo.vn"];
+const ADMIN_EMAILS = ["admin@umbo.com", "admin@umbo.vn"];
 
 function resolveIsOwner(profile) {
   return ADMIN_EMAILS.includes((profile?.email ?? "").toLowerCase().trim());
