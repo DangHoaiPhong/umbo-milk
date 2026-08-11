@@ -34,6 +34,8 @@ export const products = [
     oldPrice: 50000,
     discount: 10,
     image: img14,
+    description:
+      "Sữa bò thanh trùng dịu nhẹ, mang đến cảm giác dễ uống và thanh mát mỗi ngày.",
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
   {
@@ -44,6 +46,7 @@ export const products = [
     price: 32000,
     isNew: true,
     image: img13,
+    description: "Hương vị ngọt vừa đủ, giữ được sự dịu nhẹ và dễ thưởng thức.",
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
   {
@@ -55,6 +58,8 @@ export const products = [
     oldPrice: 62000,
     discount: 11,
     image: img12,
+    description:
+      "Vị dâu chua ngọt dịu dàng, tạo nên cảm giác tươi mới và vui vẻ.",
     stores: ["CN1", "CN3", "CN4"],
   },
   {
@@ -65,6 +70,7 @@ export const products = [
     price: 48000,
     isNew: true,
     image: img11,
+    description: "Hương chuối thơm bùi, mang đến cảm giác ấm áp và dễ thương.",
     stores: ["CN2", "CN3"],
   },
   {
@@ -74,6 +80,8 @@ export const products = [
     volume: "Chai 1000ml",
     price: 52000,
     image: img03,
+    description:
+      "Sữa bò tươi thơm dịu, giữ nguyên cảm giác tự nhiên và mịn màng.",
     stores: ["CN1", "CN2", "CN4"],
   },
   {
@@ -85,6 +93,8 @@ export const products = [
     oldPrice: 35000,
     discount: 14,
     image: img04,
+    description:
+      "Vị sữa ngọt dịu, phù hợp cho những lần uống thư giãn nhẹ nhàng.",
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
   {
@@ -95,6 +105,8 @@ export const products = [
     price: 46000,
     isNew: true,
     image: img05,
+    description:
+      "Hương socola thơm đậm, kết hợp cùng sữa béo dịu để tạo nên trải nghiệm hấp dẫn.",
     stores: ["CN2", "CN4"],
   },
   {
@@ -104,6 +116,8 @@ export const products = [
     volume: "Chai 500ml",
     price: 38000,
     image: img06,
+    description:
+      "Hương matcha thanh nhẹ, kết hợp cùng vị sữa mềm mịn và dễ chịu.",
     stores: ["CN1", "CN3"],
   },
   {
@@ -115,6 +129,8 @@ export const products = [
     oldPrice: 48000,
     discount: 13,
     image: img07,
+    description:
+      "Hương cà phê đậm đà, quyện cùng sữa mềm mịn để uống vừa thư giãn.",
     stores: ["CN3", "CN4"],
   },
   {
@@ -125,6 +141,8 @@ export const products = [
     price: 35000,
     isNew: true,
     image: img08,
+    description:
+      "Vị xoài ngọt mát và hương thơm tự nhiên, rất phù hợp cho những ngày cần năng lượng.",
     stores: ["CN1", "CN2"],
   },
   {
@@ -134,6 +152,7 @@ export const products = [
     volume: "Chai 1000ml",
     price: 58000,
     image: img09,
+    description: "Hương dừa thơm dịu, mang lại cảm giác béo mịn và dễ thương.",
     stores: ["CN2", "CN3", "CN4"],
   },
   {
@@ -145,6 +164,8 @@ export const products = [
     oldPrice: 56000,
     discount: 11,
     image: img10,
+    description:
+      "Sữa thơm béo và mịn, phù hợp cho những ai thích vị sữa đậm đà.",
     stores: ["CN1", "CN4"],
   },
 
@@ -157,6 +178,8 @@ export const products = [
     price: 25000,
     isNew: true,
     image: img01,
+    description:
+      "Mềm mịn và béo ngậy, mang đến trải nghiệm thưởng thức thư giãn.",
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
   {
@@ -168,6 +191,8 @@ export const products = [
     oldPrice: 32000,
     discount: 13,
     image: img02,
+    description:
+      "Vị dâu chua ngọt nhẹ, giúp mỗi lần ăn váng sữa trở nên tươi mới hơn.",
     stores: ["CN1", "CN3"],
   },
   {
@@ -177,6 +202,7 @@ export const products = [
     volume: "Hũ 100g",
     price: 27000,
     image: img17,
+    description: "Hương vani thơm dịu, tạo nên cảm giác ngọt nhẹ và dễ chịu.",
     stores: ["CN2", "CN4"],
   },
 
@@ -190,6 +216,8 @@ export const products = [
     oldPrice: 52000,
     discount: 13,
     image: img15,
+    description:
+      "Một món ăn vặt tiện lợi với hương vị thơm ngon, phù hợp cho nhiều lúc thưởng thức.",
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
 
@@ -203,6 +231,8 @@ export const products = [
     oldPrice: 768000,
     discount: 10,
     image: img16,
+    description:
+      "Gói sẵn nhiều lựa chọn tiện lợi, giúp bạn dễ dàng chọn món phù hợp trong tuần.",
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
   {
@@ -213,6 +243,8 @@ export const products = [
     price: 580000,
     isNew: true,
     image: img18,
+    description:
+      "Thích hợp cho những ngày bận rộn, dễ mang theo và thưởng thức nhanh.",
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
   {
@@ -224,6 +256,7 @@ export const products = [
     oldPrice: 280000,
     discount: 14,
     image: img20,
+    description: "Sự kết hợp nhiều hương vị giúp trải nghiệm thêm phần thú vị.",
     stores: ["CN2", "CN3", "CN4"],
   },
   {
@@ -234,6 +267,7 @@ export const products = [
     price: 350000,
     isNew: true,
     image: img21,
+    description: "Một gói quà nhẹ nhàng và tiện lợi cho những dịp cần gửi gắm.",
     stores: ["CN1", "CN3"],
   },
   {
@@ -255,6 +289,8 @@ export const products = [
     name: "Túi Giữ Nhiệt",
     price: 20000,
     image: img19,
+    description:
+      "Một phụ kiện tiện lợi để giữ đồ uống ấm hoặc lạnh lâu hơn trong ngày.",
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
 
@@ -268,6 +304,7 @@ export const products = [
     oldPrice: 520000,
     discount: 13,
     image: img21,
+    description: "Một hộp quà sang trọng với cảm giác lễ hội và đầy ý nghĩa.",
     isNew: true,
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
@@ -280,6 +317,8 @@ export const products = [
     oldPrice: 780000,
     discount: 13,
     image: img20,
+    description:
+      "Sự kết hợp tinh tế giữa các món quà, rất phù hợp để biếu tặng dịp trung thu.",
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
   {
@@ -314,6 +353,8 @@ export const products = [
     oldPrice: 210000,
     discount: 14,
     image: img15,
+    description:
+      "Bánh mềm thơm, mang đến cảm giác ngọt ngào và ấm áp trong dịp lễ hội.",
     isNew: true,
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
@@ -326,6 +367,8 @@ export const products = [
     oldPrice: 185000,
     discount: 14,
     image: img17,
+    description:
+      "Bánh dẻo thơm nhẹ, phù hợp để cùng gia đình chia sẻ trong những buổi sum vầy.",
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
   {
@@ -337,6 +380,8 @@ export const products = [
     oldPrice: 290000,
     discount: 14,
     image: img18,
+    description:
+      "Combo tiện lợi vừa thơm ngon vừa dễ dàng mang đi trong những ngày lễ.",
     isNew: true,
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
@@ -362,6 +407,8 @@ export const products = [
     oldPrice: 55000,
     discount: 18,
     image: img01,
+    description:
+      "Đèn lồng phát sáng rực rỡ, tạo nên không khí lễ hội thật đáng yêu.",
     isNew: true,
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
@@ -372,6 +419,8 @@ export const products = [
     volume: "1 cái",
     price: 35000,
     image: img02,
+    description:
+      "Thiết kế truyền thống và màu sắc ấm áp, phù hợp cho không gian trung thu.",
     stores: ["CN1", "CN2", "CN3", "CN4"],
   },
   {
@@ -383,6 +432,8 @@ export const products = [
     oldPrice: 145000,
     discount: 17,
     image: img03,
+    description:
+      "Bộ đồ chơi nhỏ xinh giúp bé vừa vui chơi vừa tận hưởng không khí mùa lễ hội.",
     isNew: true,
     stores: ["CN1", "CN2", "CN4"],
   },
@@ -395,6 +446,8 @@ export const products = [
     oldPrice: 65000,
     discount: 15,
     image: img04,
+    description:
+      "Đèn lồng dễ thương với ánh sáng ấm áp, tạo cảm giác vừa ngọt ngào vừa dịu dàng.",
     stores: ["CN1", "CN3"],
   },
 ];

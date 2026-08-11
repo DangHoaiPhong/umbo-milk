@@ -15,9 +15,12 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Trash2,
+  Upload,
   User,
 } from "lucide-react";
 import ThemeSettings from "@/components/ThemeSettings";
+import { getFeedbacks, saveFeedbacks } from "@/lib/feedbackStore";
 
 const ACCOUNT_STORAGE_KEY = "umbo_account_profile";
 
@@ -88,10 +91,17 @@ export default function AccountPage() {
   const [activeSection, setActiveSection] = useState("profile");
   const [editor, setEditor] = useState({ field: null, value: "", error: "" });
   const [mounted, setMounted] = useState(false);
+  const [feedbackItems, setFeedbackItems] = useState([]);
+  const [feedbackDrafts, setFeedbackDrafts] = useState([]);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    setFeedbackItems(getFeedbacks());
+  }, [mounted]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -176,6 +186,72 @@ export default function AccountPage() {
     if (typeof window !== "undefined")
       window.localStorage.removeItem(ACCOUNT_STORAGE_KEY);
     router.push("/");
+  };
+
+  const handleFeedbackFiles = async (files) => {
+    const nextFiles = Array.from(files || []).filter((file) =>
+      file.type.startsWith("image/"),
+    );
+    if (!nextFiles.length) return;
+
+    const readAsDataUrl = (file) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+    const previews = await Promise.all(
+      nextFiles.map(async (file, index) => ({
+        id: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        file,
+        preview: await readAsDataUrl(file),
+        order: feedbackDrafts.length + index + 1,
+      })),
+    );
+
+    setFeedbackDrafts((prev) => [...prev, ...previews]);
+  };
+
+  const saveFeedbacksToStorage = () => {
+    if (!feedbackDrafts.length) return;
+
+    const prepared = feedbackDrafts.map((item, index) => ({
+      id: item.id,
+      image: item.preview,
+      order: feedbackItems.length + index + 1,
+      createdAt: new Date().toISOString(),
+      alt:
+        item.file?.name ||
+        item.alt ||
+        `Feedback ${feedbackItems.length + index + 1}`,
+    }));
+    const next = saveFeedbacks([...feedbackItems, ...prepared]);
+    setFeedbackItems(next);
+    setFeedbackDrafts([]);
+  };
+
+  const removeFeedbackItem = (id) => {
+    const nextItems = feedbackItems.filter((item) => item.id !== id);
+    const saved = saveFeedbacks(nextItems);
+    setFeedbackItems(saved);
+  };
+
+  const moveFeedbackItem = (id, direction) => {
+    const currentIndex = feedbackItems.findIndex((item) => item.id === id);
+    if (currentIndex < 0) return;
+    const nextIndex = currentIndex + direction;
+    if (nextIndex < 0 || nextIndex >= feedbackItems.length) return;
+    const reordered = [...feedbackItems];
+    const [moved] = reordered.splice(currentIndex, 1);
+    reordered.splice(nextIndex, 0, moved);
+    const normalized = reordered.map((item, index) => ({
+      ...item,
+      order: index + 1,
+    }));
+    const saved = saveFeedbacks(normalized);
+    setFeedbackItems(saved);
   };
 
   const pageStyle = { background: t.pageBg };
@@ -354,6 +430,181 @@ export default function AccountPage() {
               </p>
             </div>
           </div>
+
+          {mounted && profile?.isOwner ? (
+            <div className="rounded-3xl p-5" style={sectionStyle}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p
+                    className="text-sm font-semibold uppercase tracking-[0.25em]"
+                    style={{ color: t.accentColor }}
+                  >
+                    Quản lý Feedback
+                  </p>
+                  <h2
+                    className="mt-1 text-xl font-semibold"
+                    style={{ color: t.textPrimary }}
+                  >
+                    Upload feedback khách hàng
+                  </h2>
+                </div>
+                <div className="rounded-full p-2" style={badgeStyle}>
+                  <Upload size={18} />
+                </div>
+              </div>
+
+              <div
+                className="mt-4 rounded-2xl border border-dashed p-4"
+                style={{ borderColor: t.sidebarItemBorder }}
+              >
+                <label
+                  className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed px-4 py-6 text-center"
+                  style={{
+                    borderColor: t.sidebarItemBorder,
+                    background: t.accentBg,
+                  }}
+                >
+                  <Upload size={20} style={{ color: t.accentColor }} />
+                  <span
+                    className="mt-2 text-sm font-semibold"
+                    style={{ color: t.textPrimary }}
+                  >
+                    Chọn nhiều ảnh feedback
+                  </span>
+                  <span
+                    className="mt-1 text-xs"
+                    style={{ color: t.textSecondary }}
+                  >
+                    Hỗ trợ drag & drop hoặc chọn từ máy tính
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => handleFeedbackFiles(e.target.files)}
+                  />
+                </label>
+              </div>
+
+              {feedbackDrafts.length > 0 ? (
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {feedbackDrafts.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-2xl border p-3"
+                      style={{
+                        borderColor: t.sidebarItemBorder,
+                        background: t.cardBg,
+                      }}
+                    >
+                      <div className="relative aspect-4/5 overflow-hidden rounded-xl bg-white">
+                        <img
+                          src={item.preview}
+                          alt={item.alt || "Preview feedback"}
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
+                      <p
+                        className="mt-2 text-xs"
+                        style={{ color: t.textSecondary }}
+                      >
+                        Ảnh mới · {item.file?.name || "feedback"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {feedbackDrafts.length > 0 ? (
+                <div className="mt-4 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={saveFeedbacksToStorage}
+                    className="rounded-full px-4 py-2 text-sm font-semibold text-white"
+                    style={{ background: t.accentColor }}
+                  >
+                    Lưu feedback
+                  </button>
+                </div>
+              ) : null}
+
+              {feedbackItems.length > 0 ? (
+                <div className="mt-6 space-y-3">
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: t.textPrimary }}
+                  >
+                    Feedback hiện có
+                  </p>
+                  {feedbackItems.map((item, index) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-col gap-3 rounded-2xl border p-3 sm:flex-row sm:items-center"
+                      style={{
+                        borderColor: t.sidebarItemBorder,
+                        background: t.cardBg,
+                      }}
+                    >
+                      <div className="relative h-24 w-full max-w-30 overflow-hidden rounded-xl bg-white">
+                        <img
+                          src={item.image}
+                          alt={item.alt || "Feedback"}
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <p
+                          className="text-sm font-semibold"
+                          style={{ color: t.textPrimary }}
+                        >
+                          Feedback #{index + 1}
+                        </p>
+                        <p
+                          className="text-xs"
+                          style={{ color: t.textSecondary }}
+                        >
+                          Thứ tự hiển thị: {item.order}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => moveFeedbackItem(item.id, -1)}
+                          className="rounded-full px-3 py-2 text-xs"
+                          style={{
+                            background: t.accentBg,
+                            color: t.accentColor,
+                          }}
+                        >
+                          Lên
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveFeedbackItem(item.id, 1)}
+                          className="rounded-full px-3 py-2 text-xs"
+                          style={{
+                            background: t.accentBg,
+                            color: t.accentColor,
+                          }}
+                        >
+                          Xuống
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeFeedbackItem(item.id)}
+                          className="rounded-full px-3 py-2 text-xs text-white"
+                          style={{ background: t.dangerText }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       );
     }
