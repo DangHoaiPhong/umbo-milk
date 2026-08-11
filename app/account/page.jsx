@@ -25,21 +25,32 @@ import { getFeedbacks, saveFeedbacks } from "@/lib/feedbackStore";
 const ACCOUNT_STORAGE_KEY = "umbo_account_profile";
 
 const ADMIN_EMAILS = ["admin@umbo.com", "admin@umbo.vn"];
+const OWNER_ROLE = "owner";
+const CUSTOMER_ROLE = "customer";
 
-function resolveIsOwner(profile) {
-  return ADMIN_EMAILS.includes((profile?.email ?? "").toLowerCase().trim());
-}
+const getAccountRole = (profile) =>
+  ADMIN_EMAILS.includes((profile?.email ?? "").toLowerCase().trim())
+    ? OWNER_ROLE
+    : CUSTOMER_ROLE;
 
-const initialProfile = {
-  name: "Khách hàng Umbo",
-  email: "",
-  phone: "",
-  dateOfBirth: "",
-  gender: "Khác",
-  password: "",
-  isVip: true,
-  isOwner: false,
+const normalizeProfile = (profile = {}) => {
+  const email = (profile?.email || "").trim();
+  const role = getAccountRole({ email });
+
+  return {
+    name: profile?.name || "Khách hàng Umbo",
+    email,
+    phone: profile?.phone || "",
+    dateOfBirth: profile?.dateOfBirth || "",
+    gender: profile?.gender || "Khác",
+    password: profile?.password || "",
+    isVip: Boolean(profile?.isVip),
+    role,
+    isOwner: role === OWNER_ROLE,
+  };
 };
+
+const initialProfile = normalizeProfile({});
 
 const menuItems = [
   { id: "profile", label: "Thông tin tài khoản", icon: User },
@@ -109,9 +120,7 @@ export default function AccountPage() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        const merged = { ...initialProfile, ...parsed };
-        // isOwner luôn được tính lại từ email, không tin vào giá trị lưu trong storage
-        setProfile({ ...merged, isOwner: resolveIsOwner(merged) });
+        setProfile(normalizeProfile(parsed));
       } catch {
         setProfile(initialProfile);
       }
@@ -165,13 +174,11 @@ export default function AccountPage() {
       }
     }
 
-    const nextProfile = {
+    const nextProfile = normalizeProfile({
       ...profile,
       [editor.field]:
         editor.field === "name" ? editor.value.trim() : editor.value,
-    };
-    // Tính lại isOwner nếu email thay đổi
-    nextProfile.isOwner = resolveIsOwner(nextProfile);
+    });
     setProfile(nextProfile);
     if (typeof window !== "undefined")
       window.localStorage.setItem(

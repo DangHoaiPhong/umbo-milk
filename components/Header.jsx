@@ -11,6 +11,9 @@ import { useTheme } from "@/components/ThemeProvider";
 import { MidAutumnDecorations } from "@/lib/themes/mid-autumn/decorations";
 
 const ACCOUNT_STORAGE_KEY = "umbo_account_profile";
+const ADMIN_EMAILS = ["admin@umbo.com", "admin@umbo.vn"];
+const OWNER_ROLE = "owner";
+const CUSTOMER_ROLE = "customer";
 
 const navLinks = [
   { label: "Trang chủ", href: "/" },
@@ -21,6 +24,26 @@ const navLinks = [
   { label: "Liên hệ", href: "/contact" },
 ];
 
+const getAccountRole = (profile) =>
+  ADMIN_EMAILS.includes((profile?.email ?? "").toLowerCase().trim())
+    ? OWNER_ROLE
+    : CUSTOMER_ROLE;
+
+const normalizeProfile = (profile = {}) => {
+  const email = (profile?.email || "").trim();
+  const role = getAccountRole({ email });
+
+  return {
+    name: profile?.name || "Khách hàng Umbo",
+    email,
+    phone: profile?.phone || "",
+    password: profile?.password || "",
+    isVip: Boolean(profile?.isVip),
+    role,
+    isOwner: role === OWNER_ROLE,
+  };
+};
+
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -28,6 +51,7 @@ const Header = () => {
   const { totalCount, setDrawerOpen } = useCart();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+  const [authHydrated, setAuthHydrated] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -86,25 +110,26 @@ const Header = () => {
     if (storedProfile) {
       try {
         const parsed = JSON.parse(storedProfile);
-        setUserProfile(parsed);
-        setIsLoggedIn(true);
+        setUserProfile(normalizeProfile(parsed));
+        setIsLoggedIn(Boolean(parsed?.email));
       } catch {
         window.localStorage.removeItem(ACCOUNT_STORAGE_KEY);
       }
     }
+    setAuthHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (isLoggedIn && userProfile) {
+    if (typeof window === "undefined" || !authHydrated) return;
+    if (isLoggedIn && userProfile?.email) {
       window.localStorage.setItem(
         ACCOUNT_STORAGE_KEY,
-        JSON.stringify(userProfile),
+        JSON.stringify(normalizeProfile(userProfile)),
       );
     } else {
       window.localStorage.removeItem(ACCOUNT_STORAGE_KEY);
     }
-  }, [isLoggedIn, userProfile]);
+  }, [authHydrated, isLoggedIn, userProfile]);
 
   // Auto-focus desktop input khi mở
   useEffect(() => {
@@ -177,18 +202,9 @@ const Header = () => {
   );
 
   const handleLogin = (profile) => {
-    const safeProfile = {
-      name: profile?.name || "Khách hàng Umbo",
-      email: profile?.email || "",
-      phone: profile?.phone || "",
-      password: profile?.password || "",
-      isVip: Boolean(profile?.isVip),
-      isOwner: Boolean(
-        profile?.isOwner || profile?.email?.toLowerCase() === "admin@umbo.vn",
-      ),
-    };
+    const safeProfile = normalizeProfile(profile);
     setUserProfile(safeProfile);
-    setIsLoggedIn(true);
+    setIsLoggedIn(Boolean(safeProfile.email));
     setLoginOpen(false);
     setAccountMenuOpen(false);
   };
